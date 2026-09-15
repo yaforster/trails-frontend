@@ -1,0 +1,451 @@
+<section class="action-editor" fDragBlocker>
+  @let currentNode = node();
+  <label>
+    <span>Action</span>
+    <div class="action-select">
+      <button
+        class="action-select-trigger"
+        type="button"
+        [class.placeholder]="currentNode.action.detailsType === null"
+        (click)="toggleActionMenu()"
+      >
+        <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">{{
+          actionTypeIcon(currentNode.action.detailsType)
+        }}</mat-icon>
+        <span>{{ currentNode.action.detailsType ?? 'Select action' }}</span>
+        <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">expand_more</mat-icon>
+      </button>
+
+      @if (openActionMenu()) {
+        <div class="action-select-menu">
+          @if (!currentNode.defaultActionType) {
+            <button
+              type="button"
+              class="action-select-option muted"
+              (click)="selectActionType(null)"
+            >
+              <span>Select action</span>
+            </button>
+          }
+          @for (actionType of selectableActionTypes(currentNode); track actionType) {
+            <button
+              type="button"
+              class="action-select-option"
+              (click)="selectActionType(actionType)"
+            >
+              <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">{{
+                actionTypeIcon(actionType)
+              }}</mat-icon>
+              <span>{{ actionType }}</span>
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </label>
+
+  @if (graph.needsStorageKey(currentNode.action.detailsType)) {
+    <label>
+      <span>Storage key</span>
+      <input
+        type="text"
+        [value]="currentNode.action.storageKey"
+        (input)="onTextFieldChange($event, 'storageKey')"
+      />
+    </label>
+  }
+
+  @if (graph.needsCookieName(currentNode.action.detailsType)) {
+    <label>
+      <span>Cookie name</span>
+      <input
+        type="text"
+        [value]="currentNode.action.cookieName"
+        (input)="onTextFieldChange($event, 'cookieName')"
+      />
+    </label>
+  }
+
+  @if (graph.needsDownloadedFileName(currentNode.action.detailsType)) {
+    <label>
+      <span>Downloaded file name</span>
+      <input
+        type="text"
+        [value]="currentNode.action.downloadedFileName"
+        placeholder="report.pdf"
+        (input)="onTextFieldChange($event, 'downloadedFileName')"
+      />
+    </label>
+  }
+
+  @if (graph.needsDownloadedDocumentText(currentNode.action.detailsType)) {
+    <label>
+      <span>Downloaded document name</span>
+      <input
+        type="text"
+        [value]="currentNode.action.downloadedDocumentFileName"
+        placeholder="report.pdf"
+        (input)="onTextFieldChange($event, 'downloadedDocumentFileName')"
+      />
+    </label>
+
+    <label>
+      <span>Expected document text</span>
+      <textarea
+        rows="3"
+        [value]="currentNode.action.downloadedDocumentExpectedText"
+        placeholder="Approved"
+        (input)="onTextFieldChange($event, 'downloadedDocumentExpectedText')"
+      ></textarea>
+    </label>
+
+    <label class="checkbox-field">
+      <input
+        type="checkbox"
+        [checked]="currentNode.action.downloadedDocumentCaseSensitive"
+        (change)="onDownloadedDocumentCaseSensitiveChange($event)"
+      />
+      <span>Case-sensitive match</span>
+    </label>
+  }
+
+  @if (graph.needsViewportMove(currentNode.action.detailsType)) {
+    <label>
+      <span>Movement</span>
+      <select
+        [value]="currentNode.action.viewportMovement"
+        (change)="onViewportMovementChange($event)"
+      >
+        @for (movement of graph.viewportMovements; track movement) {
+          <option [value]="movement">{{ movement }}</option>
+        }
+      </select>
+    </label>
+
+    @if (
+      currentNode.action.viewportMovement === 'SCROLL_BY' ||
+      currentNode.action.viewportMovement === 'PAGE_FLIP'
+    ) {
+      <div class="field-grid">
+        <label>
+          <span>Direction</span>
+          <select
+            [value]="currentNode.action.viewportDirection"
+            (change)="onViewportDirectionChange($event)"
+          >
+            @for (direction of graph.viewportDirections; track direction) {
+              <option [value]="direction">{{ direction }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          <span>Amount</span>
+          <input
+            type="number"
+            min="0"
+            step="0.1"
+            [value]="currentNode.action.viewportAmount"
+            (input)="onNumberFieldChange($event, 'viewportAmount')"
+          />
+        </label>
+      </div>
+    }
+
+    @if (currentNode.action.viewportMovement === 'SCROLL_BY') {
+      <label>
+        <span>Unit</span>
+        <select [value]="currentNode.action.viewportUnit" (change)="onViewportUnitChange($event)">
+          @for (unit of graph.viewportUnits; track unit) {
+            <option [value]="unit">{{ unit }}</option>
+          }
+        </select>
+      </label>
+    }
+
+    <label>
+      <span>Delay after move (milliseconds)</span>
+      <input
+        type="number"
+        min="0"
+        step="1"
+        [value]="currentNode.action.viewportDelayAfterMoveMillis"
+        (input)="onNumberFieldChange($event, 'viewportDelayAfterMoveMillis')"
+      />
+    </label>
+  }
+
+  @if (graph.needsCoordinateClick(currentNode.action.detailsType)) {
+    <div class="field-grid">
+      <label>
+        <span>X coordinate</span>
+        <input
+          type="number"
+          min="0"
+          max="2147483647"
+          step="1"
+          [value]="coordinateInputValue(currentNode.action.xCoordinate)"
+          (input)="onCoordinateChange($event, 'xCoordinate')"
+        />
+      </label>
+      <label>
+        <span>Y coordinate</span>
+        <input
+          type="number"
+          min="0"
+          max="2147483647"
+          step="1"
+          [value]="coordinateInputValue(currentNode.action.yCoordinate)"
+          (input)="onCoordinateChange($event, 'yCoordinate')"
+        />
+      </label>
+    </div>
+    <p>Viewport CSS pixels from the visible top-left corner.</p>
+  }
+
+  @if (graph.needsViewportResize(currentNode.action.detailsType)) {
+    <div class="field-grid">
+      <label>
+        <span>Viewport width</span>
+        <input
+          type="number"
+          min="1"
+          max="2147483647"
+          step="1"
+          [value]="viewportDimensionInputValue(currentNode.action.viewportWidth)"
+          (input)="onViewportDimensionChange($event, 'viewportWidth')"
+        />
+      </label>
+      <label>
+        <span>Viewport height</span>
+        <input
+          type="number"
+          min="1"
+          max="2147483647"
+          step="1"
+          [value]="viewportDimensionInputValue(currentNode.action.viewportHeight)"
+          (input)="onViewportDimensionChange($event, 'viewportHeight')"
+        />
+      </label>
+    </div>
+    <p>Exact visible viewport CSS pixels (window.innerWidth × window.innerHeight).</p>
+  }
+
+  @if (graph.needsElementValueTarget(currentNode.action.detailsType)) {
+    <div class="field-grid">
+      <label>
+        <span>Read from</span>
+        <select
+          [value]="currentNode.action.elementValueSource"
+          (change)="onElementValueSourceChange($event)"
+        >
+          @for (source of graph.elementValueSources; track source) {
+            <option [value]="source">{{ source }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        <span>Name to read</span>
+        <input
+          type="text"
+          [value]="currentNode.action.elementValueName"
+          (input)="onTextFieldChange($event, 'elementValueName')"
+        />
+      </label>
+    </div>
+  }
+
+  @if (currentNode.action.detailsType === 'TYPING') {
+    <label class="checkbox-field">
+      <input
+        type="checkbox"
+        [checked]="currentNode.action.clearBeforeTyping"
+        (change)="onClearBeforeTypingChange($event)"
+      />
+      <span>Clear field before typing</span>
+    </label>
+
+    @if (currentNode.action.clearBeforeTyping) {
+      <label>
+        <span>Delay after clear (milliseconds)</span>
+        <input
+          type="number"
+          min="0"
+          step="1"
+          [value]="currentNode.action.delayAfterClearMillis"
+          (input)="onNumberFieldChange($event, 'delayAfterClearMillis')"
+        />
+      </label>
+    }
+  }
+
+  @if (currentNode.action.detailsType === 'EXPLICIT_WAIT') {
+    <label>
+      <span>Delay time (milliseconds)</span>
+      <input
+        type="number"
+        min="0"
+        step="1"
+        [value]="currentNode.action.delayMillis"
+        (input)="onNumberFieldChange($event, 'delayMillis')"
+      />
+    </label>
+  }
+
+  @if (graph.needsValueComputation(currentNode.action.detailsType)) {
+    <label>
+      <span>Value source</span>
+      <select
+        [value]="currentNode.action.valueComputationType"
+        (change)="onValueComputationTypeChange($event)"
+      >
+        @for (computationType of graph.valueComputationTypes; track computationType) {
+          <option [value]="computationType">{{ computationType }}</option>
+        }
+      </select>
+    </label>
+
+    @switch (currentNode.action.valueComputationType) {
+      @case ('FIXED') {
+        <label>
+          <span>Value</span>
+          <input
+            type="text"
+            [value]="currentNode.action.value"
+            (input)="onTextFieldChange($event, 'value')"
+          />
+        </label>
+      }
+      @case ('RELATIVE_DATE') {
+        <div class="field-grid">
+          <label>
+            <span>Offset days</span>
+            <input
+              type="number"
+              [value]="currentNode.action.offsetDays"
+              (input)="onNumberFieldChange($event, 'offsetDays')"
+            />
+          </label>
+          <label>
+            <span>Format</span>
+            <input
+              type="text"
+              [value]="currentNode.action.formatPattern"
+              (input)="onTextFieldChange($event, 'formatPattern')"
+            />
+          </label>
+        </div>
+      }
+      @case ('RANDOM') {
+        <div class="field-grid">
+          <label>
+            <span>Prefix</span>
+            <input
+              type="text"
+              [value]="currentNode.action.prefix"
+              (input)="onTextFieldChange($event, 'prefix')"
+            />
+          </label>
+          <label>
+            <span>Suffix</span>
+            <input
+              type="text"
+              [value]="currentNode.action.suffix"
+              (input)="onTextFieldChange($event, 'suffix')"
+            />
+          </label>
+          <label>
+            <span>Characters</span>
+            <input
+              type="text"
+              [value]="currentNode.action.charPool"
+              (input)="onTextFieldChange($event, 'charPool')"
+            />
+          </label>
+          <label>
+            <span>Length</span>
+            <input
+              type="number"
+              [value]="currentNode.action.randomStringLength"
+              (input)="onNumberFieldChange($event, 'randomStringLength')"
+            />
+          </label>
+        </div>
+      }
+      @case ('TIMESTAMP_NOW') {
+        <label>
+          <span>Format</span>
+          <input
+            type="text"
+            [value]="currentNode.action.formatPattern"
+            (input)="onTextFieldChange($event, 'formatPattern')"
+          />
+        </label>
+      }
+      @case ('SYSTEM_VAR') {
+        <div class="field-grid">
+          <label>
+            <span>Variable</span>
+            <input
+              type="text"
+              [value]="currentNode.action.variableName"
+              (input)="onTextFieldChange($event, 'variableName')"
+            />
+          </label>
+          <label>
+            <span>Default</span>
+            <input
+              type="text"
+              [value]="currentNode.action.defaultValue"
+              (input)="onTextFieldChange($event, 'defaultValue')"
+            />
+          </label>
+        </div>
+      }
+      @case ('TEST_DATA') {
+        <div class="field-grid">
+          <label>
+            <span>Profile</span>
+            <select
+              [value]="currentNode.action.testDataId ?? ''"
+              [disabled]="testDataLoading()"
+              (change)="onTestDataProfileChange($event)"
+            >
+              <option value="">
+                @if (testDataLoading()) {
+                  Loading profiles
+                } @else {
+                  Select profile
+                }
+              </option>
+              @for (testDataSet of testDataSets(); track testDataSet.id) {
+                <option [value]="testDataSet.id">{{ testDataProfileLabel(testDataSet) }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            <span>Key</span>
+            <select
+              [value]="currentNode.action.key"
+              [disabled]="testDataEntriesForNode().length === 0"
+              (change)="onTestDataKeyChange($event)"
+            >
+              <option value="">Select key</option>
+              @for (entry of testDataEntriesForNode(); track entry.key) {
+                <option [value]="entry.key">{{ testDataEntryLabel(entry) }}</option>
+              }
+            </select>
+          </label>
+        </div>
+        @if (testDataError()) {
+          <p class="field-error">{{ testDataError() }}</p>
+        } @else if (!testDataLoading() && testDataSets().length === 0) {
+          <p class="field-error">No active test data profiles are available.</p>
+        } @else if (
+          currentNode.action.testDataId !== null && testDataEntriesForNode().length === 0
+        ) {
+          <p class="field-error">The selected profile has no key-value pairs.</p>
+        }
+      }
+    }
+  }
+</section>

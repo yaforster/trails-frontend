@@ -1,0 +1,85 @@
+<aside class="element-sidebar" aria-label="Available elements">
+  <header>
+    <div>
+      <h1>Available elements</h1>
+      <p>Drag an element onto the canvas.</p>
+    </div>
+
+    <button
+      tuiIconButton
+      type="button"
+      size="s"
+      appearance="outline"
+      [disabled]="loading() || !context.selectedApplicationId() || !context.selectedStageId()"
+      (click)="reload.emit()"
+      aria-label="Reload elements"
+    >
+      @if (loading()) {
+        <tui-loader size="s" [inheritColor]="true" aria-label="Reloading elements" />
+      } @else {
+        <svg lucideRefreshCw size="16"></svg>
+      }
+    </button>
+  </header>
+
+  @if (error()) {
+    <p class="sidebar-error">{{ error() }}</p>
+  }
+
+  <section class="palette-panel" aria-label="Element selection">
+    <div class="palette-list">
+      @if (!context.selectedApplicationId() || !context.selectedStageId()) {
+        <p class="empty-state">Select an application and stage.</p>
+      } @else if (loading()) {
+        <div class="loading-state">
+          <tui-loader size="s" aria-label="Loading elements" />
+          <span>Loading elements</span>
+        </div>
+      } @else {
+        @for (item of utilityItems(); track item.label) {
+          <article
+            class="palette-item"
+            fExternalItem
+            [fExternalItemId]="'utility-palette-' + item.label"
+            [fData]="item"
+            [fPreviewMatchSize]="true"
+            [title]="item.label + ' | ' + item.type + ' / ' + item.locatorType"
+          >
+            <div class="palette-title">
+              <span class="palette-icon-box">
+                <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">{{
+                  actionTypeIcon(item.defaultActionType ?? null)
+                }}</mat-icon>
+              </span>
+              <span>{{ item.label }}</span>
+            </div>
+            <span class="palette-meta">{{ item.type }} / {{ item.locatorType }}</span>
+          </article>
+        }
+
+        <div class="palette-divider"></div>
+
+        @if (elementItems().length === 0) {
+          <p class="empty-state">No active elements are available.</p>
+        } @else {
+          @for (item of elementItems(); track item.elementId ?? item.label) {
+            <article
+              class="palette-item"
+              fExternalItem
+              [fExternalItemId]="'element-palette-' + (item.elementId ?? item.label)"
+              [fData]="item"
+              [fPreviewMatchSize]="true"
+              [title]="item.label + ' | ' + item.type + ' / ' + item.locatorType"
+            >
+              <div class="palette-title">
+                <svg lucideBox size="16"></svg>
+                <span>{{ item.label }}</span>
+              </div>
+              <span class="palette-meta">{{ item.type }} / {{ item.locatorType }}</span>
+            </article>
+          }
+        }
+      }
+    </div>
+  </section>
+</aside>

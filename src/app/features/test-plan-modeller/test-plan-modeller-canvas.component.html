@@ -1,0 +1,226 @@
+<f-flow
+  fDraggable
+  (fCreateNode)="onCreateNode($event)"
+  (fCreateConnection)="onCreateConnection($event)"
+  (fDropToGroup)="onDropToGroup($event)"
+  (fDragEnded)="onDragEnded()"
+  (pointerdown)="onPointerDown($event)"
+>
+  <f-background>
+    <f-circle-pattern />
+  </f-background>
+
+  <f-canvas fZoom>
+    <f-connection-for-create fBehavior="fixed" fType="segment">
+      <f-connection-marker-arrow type="f-connection-marker-end-all-states" />
+    </f-connection-for-create>
+
+    @for (group of graph.groups(); track group.id) {
+      <div
+        class="action-group"
+        fGroup
+        [fGroupId]="group.id"
+        [fGroupPosition]="group.position"
+        [fGroupSize]="group.size"
+        [fIncludePadding]="true"
+        [fAutoSizeToFitChildren]="true"
+        [fAutoExpandOnChildHit]="true"
+        fGroupSelectionDisabled
+        (fGroupPositionChange)="graph.moveGroup(group.id, $event)"
+        (fGroupSizeChange)="onResizeGroup(group.id, $event)"
+      >
+        <div class="action-group-header" fDragHandle>
+          <input
+            class="action-group-label"
+            type="text"
+            fDragBlocker
+            maxlength="255"
+            aria-label="Action group label"
+            [value]="group.label"
+            (input)="onGroupLabelInput(group.id, $event)"
+          />
+          <button
+            class="group-delete-button"
+            type="button"
+            fDragBlocker
+            aria-label="Delete action group"
+            (click)="graph.deleteGroup(group.id)"
+          >
+            <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">delete</mat-icon>
+          </button>
+        </div>
+      </div>
+    }
+
+    @for (connection of graph.connections(); track connection.id) {
+      <f-connection
+        [fConnectionId]="connection.id"
+        [fOutputId]="connection.sourceConnectorId"
+        [fInputId]="connection.targetConnectorId"
+        fBehavior="fixed"
+        fType="segment"
+      >
+        <f-connection-marker-arrow type="f-connection-marker-end-all-states" />
+        <button
+          class="edge-delete-button"
+          type="button"
+          aria-label="Delete edge"
+          fConnectionContent
+          [position]="0.5"
+          [offset]="-14"
+          (click)="deleteConnection(connection.id, $event)"
+        >
+          <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">delete</mat-icon>
+        </button>
+      </f-connection>
+    }
+
+    @for (node of graph.nodes(); track node.id) {
+      <app-test-plan-action-node
+        class="element-node"
+        fNode
+        fDragHandle
+        [fNodeId]="node.id"
+        fMinimapClass="test-plan-minimap-node"
+        [fNodePosition]="node.position"
+        [fNodeParentId]="node.parentGroupId"
+        [attr.data-node-id]="node.id"
+        [node]="node"
+        [testDataSets]="testDataSets()"
+        [testDataLoading]="testDataLoading()"
+        [testDataError]="testDataError()"
+        (fNodePositionChange)="onMoveNode({ nodeId: node.id, position: $event })"
+        (deleteNode)="deleteNode($event)"
+      />
+    }
+  </f-canvas>
+
+  <f-selection-area />
+  <f-minimap [fMinSize]="2000" />
+</f-flow>
+
+<div class="viewport-actions" aria-live="polite">
+  @if (validationWarning()) {
+    <section class="create-validation-warning" role="status">
+      <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">warning</mat-icon>
+      <div>
+        <strong>Test plan cannot be saved</strong>
+        <span>{{ validationWarning() }}</span>
+      </div>
+    </section>
+  }
+
+  @if (message()) {
+    <span class="create-state success">{{ message() }}</span>
+  }
+
+  @if (error()) {
+    <span class="create-state error">{{ error() }}</span>
+  }
+
+  <div class="viewport-toolbar" aria-label="Modeller tools">
+    <button
+      class="canvas-tool-button viewport-tool-button primary"
+      type="button"
+      fDragBlocker
+      [disabled]="createLoading() || !canCreate()"
+      aria-label="Create test plan"
+      title="Create test plan"
+      (pointerdown)="stopViewportControlDrag($event)"
+      (click)="createPlan.emit($event)"
+    >
+      @if (createLoading()) {
+        <tui-loader size="s" [inheritColor]="true" aria-label="Creating test plan" />
+      } @else {
+        <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">add_task</mat-icon>
+      }
+    </button>
+    <span class="viewport-toolbar-divider" aria-hidden="true"></span>
+    <button
+      class="viewport-tool-button"
+      type="button"
+      fDragBlocker
+      aria-label="Show TestPlanDefinition JSON"
+      title="Show TestPlanDefinition JSON"
+      (pointerdown)="stopViewportControlDrag($event)"
+      (click)="previewDefinition.emit()"
+    >
+      <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">code</mat-icon>
+    </button>
+    <button
+      class="viewport-tool-button"
+      type="button"
+      fDragBlocker
+      [attr.aria-label]="fullscreen() ? 'Exit fullscreen modeller' : 'Show modeller fullscreen'"
+      [title]="fullscreen() ? 'Exit fullscreen' : 'Fullscreen'"
+      (pointerdown)="stopViewportControlDrag($event)"
+      (click)="toggleFullscreen.emit()"
+    >
+      <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">{{
+        fullscreen() ? 'fullscreen_exit' : 'fullscreen'
+      }}</mat-icon>
+    </button>
+    <span class="viewport-toolbar-divider" aria-hidden="true"></span>
+    <button
+      class="viewport-tool-button"
+      type="button"
+      fDragBlocker
+      aria-label="Zoom in"
+      title="Zoom in"
+      (pointerdown)="stopViewportControlDrag($event)"
+      (click)="zoomIn()"
+    >
+      <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">zoom_in</mat-icon>
+    </button>
+    <button
+      class="viewport-tool-button"
+      type="button"
+      fDragBlocker
+      aria-label="Zoom out"
+      title="Zoom out"
+      (pointerdown)="stopViewportControlDrag($event)"
+      (click)="zoomOut()"
+    >
+      <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">zoom_out</mat-icon>
+    </button>
+    <span class="viewport-toolbar-divider" aria-hidden="true"></span>
+    <button
+      class="viewport-tool-button"
+      type="button"
+      fDragBlocker
+      aria-label="Reset view"
+      title="Reset view"
+      (pointerdown)="stopViewportControlDrag($event)"
+      (click)="resetView()"
+    >
+      <mat-icon aria-hidden="true" fontSet="material-symbols-outlined"
+        >filter_center_focus</mat-icon
+      >
+    </button>
+    <button
+      class="viewport-tool-button"
+      type="button"
+      fDragBlocker
+      aria-label="Fit canvas to screen"
+      title="Fit canvas to screen"
+      (pointerdown)="stopViewportControlDrag($event)"
+      (click)="fitToScreen()"
+    >
+      <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">fit_screen</mat-icon>
+    </button>
+    <span class="viewport-toolbar-divider" aria-hidden="true"></span>
+    <button
+      class="viewport-tool-button"
+      type="button"
+      fDragBlocker
+      [attr.aria-label]="modellerDark() ? 'Use light modeller theme' : 'Use dark modeller theme'"
+      [title]="modellerDark() ? 'Use light modeller theme' : 'Use dark modeller theme'"
+      (pointerdown)="stopViewportControlDrag($event)"
+      (click)="toggleModellerTheme.emit()"
+    >
+      <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">{{
+        modellerDark() ? 'light_mode' : 'dark_mode'
+      }}</mat-icon>
+    </button>
+  </div>
+</div>

@@ -1,0 +1,171 @@
+@if (notifications().length > 0) {
+  <section class="notification-stack" aria-live="polite" aria-label="Notifications">
+    @for (notification of notifications(); track notification.id) {
+      <div
+        tuiNotification
+        class="app-notification notification-surface"
+        size="m"
+        [appearance]="notificationAppearance(notification.severity)"
+        [class.notification-success]="notification.severity === 'success'"
+        [class.notification-error]="notification.severity === 'error'"
+      >
+        <div class="notification-message-body">
+          <div class="notification-message-text">
+            <div class="notification-title">{{ notification.summary }}</div>
+            <div class="notification-subtitle">{{ notification.detail }}</div>
+          </div>
+
+          <div class="notification-message-actions">
+            @if (notification.action) {
+              <button
+                tuiButton
+                type="button"
+                size="s"
+                appearance="secondary"
+                (click)="runNotificationAction(notification)"
+              >
+                {{ notification.action.label }}
+              </button>
+            }
+
+            <button
+              tuiButton
+              type="button"
+              size="s"
+              appearance="flat"
+              (click)="dismissNotification(notification)"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </section>
+}
+
+<header tuiNavigationHeader aria-label="Application controls">
+  <button
+    tuiIconButton
+    class="header-control"
+    type="button"
+    size="s"
+    appearance="outline"
+    [attr.aria-label]="navigationExpanded() ? 'Collapse navigation' : 'Expand navigation'"
+    [attr.aria-pressed]="navigationExpanded()"
+    (click)="toggleNavigation()"
+  >
+    @if (navigationExpanded()) {
+      <svg lucidePanelLeftClose aria-hidden="true"></svg>
+    } @else {
+      <svg lucideMenu aria-hidden="true"></svg>
+    }
+  </button>
+
+  <div class="header-actions">
+    <div
+      class="navigation-spinner"
+      [class.visible]="showNavigationSpinner()"
+      aria-live="polite"
+      aria-label="Loading page"
+    >
+      <tui-loader size="s" [inheritColor]="true" />
+    </div>
+
+    @if (authenticated() && !userFeaturesActive()) {
+      <button tuiIconButton type="button" appearance="flat" aria-label="Logout" (click)="logout()">
+        <svg lucideLogOut size="18"></svg>
+      </button>
+    }
+
+    @if (authenticated() && userFeaturesActive()) {
+      <app-current-user-profile-button />
+    }
+
+    <button
+      tuiIconButton
+      class="header-control theme-button"
+      type="button"
+      size="s"
+      appearance="outline"
+      [attr.aria-label]="darkMode() ? 'Switch to light mode' : 'Switch to dark mode'"
+      [attr.aria-pressed]="darkMode()"
+      (click)="toggleDarkMode()"
+    >
+      @if (darkMode()) {
+        <svg lucideSun size="18"></svg>
+      } @else {
+        <svg lucideMoon size="18"></svg>
+      }
+    </button>
+  </div>
+</header>
+
+<aside
+  [tuiNavigationAside]="navigationExpanded()"
+  [class.navigation-expanded]="navigationExpanded()"
+  [class.navigation-collapsed]="!navigationExpanded()"
+  aria-label="Primary navigation"
+>
+  <nav class="side-nav" aria-label="Primary">
+    @if (!authenticated()) {
+      <a
+        tuiAsideItem
+        routerLink="/login"
+        aria-label="Login"
+        (click)="showTabLoadingFeedback()"
+      >
+        <svg lucideLockKeyhole aria-hidden="true"></svg>
+        <span class="side-nav-label" aria-hidden="true">Login</span>
+      </a>
+    }
+
+    <a
+      tuiAsideItem
+      routerLink="/data-management"
+      aria-label="Data management"
+      [class.disabled]="!authenticated()"
+      [attr.aria-disabled]="!authenticated()"
+      (click)="showTabLoadingFeedback()"
+    >
+      <svg lucideDatabase aria-hidden="true"></svg>
+      <span class="side-nav-label" aria-hidden="true">Data management</span>
+    </a>
+
+    <a
+      tuiAsideItem="Test plan modeller"
+      routerLink="/test-plan-modeller"
+      aria-label="Test plan modeller"
+      [class.disabled]="!authenticated()"
+      [attr.aria-disabled]="!authenticated()"
+      (click)="showTabLoadingFeedback()"
+    >
+      <svg lucideWorkflow aria-hidden="true"></svg>
+      <span class="side-nav-label" aria-hidden="true">Test plan modeller</span>
+    </a>
+
+    <a
+      tuiAsideItem
+      routerLink="/test-results"
+      aria-label="Test results"
+      [class.disabled]="!authenticated()"
+      [attr.aria-disabled]="!authenticated()"
+      (click)="showTabLoadingFeedback()"
+    >
+      <svg lucideClipboardCheck aria-hidden="true"></svg>
+      <span class="side-nav-label" aria-hidden="true">Test results</span>
+    </a>
+  </nav>
+</aside>
+
+<main tuiNavigationMain class="content">
+  @if (authenticated()) {
+    <section class="workspace-card" aria-label="Execution context">
+      <app-workspace-context-panel />
+    </section>
+  }
+
+  <section class="page-content">
+    <router-outlet />
+  </section>
+</main>

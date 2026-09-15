@@ -1,0 +1,49 @@
+﻿<article class="result-panel">
+  <h2>Test Run Result</h2>
+
+  <div class="field-grid">
+    <div class="field-box">
+      <span>Test Run ID</span>
+      <strong>{{ details().result.id ?? '-' }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Application ID</span>
+      <strong>{{ details().result.applicationId ?? detailsRoute()?.applicationId ?? '-' }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Stage ID</span>
+      <strong>{{ details().result.stageId ?? detailsRoute()?.stageId ?? '-' }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Timestamp</span>
+      <strong>{{
+        details().result.timestamp
+          ? (details().result.timestamp | date: 'dd.MM.yyyy HH:mm:ss')
+          : '-'
+      }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Status</span>
+      <strong
+        class="status-badge"
+        [class.status-success]="details().result.indicator === 'SUCCESS'"
+        [class.status-partial]="details().result.indicator === 'PARTIAL_SUCCESS'"
+        [class.status-failure]="details().result.indicator === 'FAILURE'"
+      >
+        {{ resultIndicatorLabel(details().result.indicator) }}
+      </strong>
+    </div>
+    <div class="field-box">
+      <span>Label</span>
+      <strong>{{ details().result.label ?? '-' }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Attached Test Set Results</span>
+      <strong>{{ details().testSets.length }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Saved Files</span>
+      <strong>{{ savedFileCount() }}</strong>
+    </div>
+  </div>
+</article>

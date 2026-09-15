@@ -1,0 +1,52 @@
+<ng-template
+  [tuiDialog]="open()"
+  (tuiDialogChange)="$event ? openChange.emit(true) : close.emit()"
+  [tuiDialogOptions]="{
+    label: 'Create test plan',
+    size: 'm',
+    dismissible: !loading(),
+  }"
+>
+  <div class="create-plan-dialog-content">
+    <label>
+      <span>Test plan name</span>
+      <input
+        type="text"
+        [value]="name()"
+        placeholder="Enter a test plan name"
+        (input)="onNameInput($event)"
+      />
+    </label>
+
+    @if (error()) {
+      <p class="create-plan-error">{{ error() }}</p>
+    }
+
+    <div class="create-plan-dialog-actions">
+      <button
+        tuiButton
+        type="button"
+        appearance="outline"
+        [disabled]="loading()"
+        (click)="close.emit()"
+      >
+        Cancel
+      </button>
+
+      <button
+        tuiButton
+        type="button"
+        class="confirm-create-plan-button"
+        [disabled]="loading() || !nameValid()"
+        (click)="create.emit()"
+      >
+        @if (loading()) {
+          <tui-loader size="s" [inheritColor]="true" aria-label="Creating test plan" />
+        } @else {
+          <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">add_task</mat-icon>
+        }
+        Create test plan
+      </button>
+    </div>
+  </div>
+</ng-template>

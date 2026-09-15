@@ -1,0 +1,223 @@
+<section class="resource-panel">
+  <header class="resource-panel-header">
+    <div>
+      <h2>Available test plans</h2>
+      <p>Test plans for the selected application and stage.</p>
+    </div>
+
+    <div class="resource-toolbar">
+      @if (canShowRetiredTab()) {
+        <tui-segmented
+          size="s"
+          [activeItemIndex]="activeTabIndex()"
+          (activeItemIndexChange)="setTab($event)"
+        >
+          <button type="button">Active</button>
+          <button type="button">Retired</button>
+        </tui-segmented>
+      }
+
+      <div class="resource-toolbar-actions">
+        <button
+          tuiButton
+          type="button"
+          size="s"
+          appearance="outline"
+          [disabled]="loading() || !hasSelectedContext()"
+          (click)="reload.emit()"
+        >
+          @if (loading()) {
+            <tui-loader size="s" [inheritColor]="true" aria-label="Reloading test plans" />
+          } @else {
+            <svg lucideRefreshCw size="18"></svg>
+          }
+          Reload
+        </button>
+      </div>
+    </div>
+  </header>
+
+  @if (error()) {
+    <p tuiMessage appearance="negative">{{ error() }}</p>
+  }
+
+  <div class="resource-table-scroll">
+    <table class="resource-table stable-test-plan-table">
+      <thead>
+        <tr>
+          <th class="test-plan-id-column">ID</th>
+          <th class="test-plan-label-column">Label</th>
+          <th class="test-plan-actions-column">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (testPlan of visibleTestPlans(); track testPlan.id ?? $index) {
+          <tr>
+            <td class="test-plan-id-column">{{ testPlan.id ?? '-' }}</td>
+            <td class="test-plan-label-column">
+              <span class="test-plan-label" [title]="testPlan.label ?? '-'">{{
+                testPlan.label ?? '-'
+              }}</span>
+            </td>
+            <td class="test-plan-actions-column">
+              <div class="table-actions">
+                @if (testPlan.retired === true) {
+                  <span class="button-tooltip" [title]="openTestPlanTooltip(testPlan)">
+                    <button
+                      tuiIconButton
+                      type="button"
+                      size="xs"
+                      appearance="outline"
+                      [disabled]="!canOpenTestPlan(testPlan)"
+                      (click)="openTestPlan.emit(testPlan)"
+                      [attr.aria-label]="openTestPlanTooltip(testPlan)"
+                    >
+                      @if (openingTestPlanId() === testPlan.id) {
+                        <tui-loader size="s" [inheritColor]="true" aria-label="Opening test plan" />
+                      } @else {
+                        <mat-icon aria-hidden="true" fontSet="material-symbols-outlined"
+                          >graph_2</mat-icon
+                        >
+                      }
+                    </button>
+                  </span>
+
+                  @if (testPlan._links?.['restore']?.href) {
+                    <button
+                      tuiIconButton
+                      type="button"
+                      size="xs"
+                      appearance="positive"
+                      (click)="restoreTestPlan.emit(testPlan)"
+                      aria-label="Restore test plan"
+                      title="Restore test plan"
+                    >
+                      <mat-icon aria-hidden="true" fontSet="material-symbols-outlined"
+                        >restore_from_trash</mat-icon
+                      >
+                    </button>
+                  }
+                } @else {
+                  <button
+                    tuiIconButton
+                    type="button"
+                    size="xs"
+                    appearance="positive"
+                    [disabled]="!canOpenRunDialog(testPlan)"
+                    (click)="runTestPlan.emit(testPlan)"
+                    aria-label="Run test plan"
+                  >
+                    @if (runningTestPlanId() === testPlan.id) {
+                      <tui-loader size="s" [inheritColor]="true" aria-label="Running test plan" />
+                    } @else {
+                      <svg lucidePlay size="16"></svg>
+                    }
+                  </button>
+                }
+
+                @if (testPlan.retired !== true && testPlan._links?.['promote']?.href) {
+                  <button
+                    tuiIconButton
+                    type="button"
+                    size="xs"
+                    appearance="outline"
+                    (click)="promoteTestPlan.emit(testPlan)"
+                    aria-label="Promote test plan"
+                    title="Promote test plan"
+                  >
+                    <mat-icon aria-hidden="true" fontSet="material-symbols-outlined"
+                      >database_upload</mat-icon
+                    >
+                  </button>
+                }
+
+                @if (testPlan.retired !== true) {
+                  <button
+                    tuiIconButton
+                    type="button"
+                    size="xs"
+                    appearance="outline"
+                    [disabled]="!canOpenTestPlanMetrics(testPlan)"
+                    (click)="openMetrics.emit(testPlan)"
+                    aria-label="Open test plan metrics"
+                    title="Open test plan metrics"
+                  >
+                    <mat-icon aria-hidden="true" fontSet="material-symbols-outlined"
+                      >query_stats</mat-icon
+                    >
+                  </button>
+                }
+
+                @if (testPlan.retired !== true) {
+                  <span class="button-tooltip" [title]="openTestPlanTooltip(testPlan)">
+                    <button
+                      tuiIconButton
+                      type="button"
+                      size="xs"
+                      appearance="outline"
+                      [disabled]="!canOpenTestPlan(testPlan)"
+                      (click)="openTestPlan.emit(testPlan)"
+                      [attr.aria-label]="openTestPlanTooltip(testPlan)"
+                    >
+                      @if (openingTestPlanId() === testPlan.id) {
+                        <tui-loader size="s" [inheritColor]="true" aria-label="Opening test plan" />
+                      } @else {
+                        <mat-icon aria-hidden="true" fontSet="material-symbols-outlined"
+                          >graph_2</mat-icon
+                        >
+                      }
+                    </button>
+                  </span>
+                }
+
+                @if (testPlan.retired !== true && testPlan._links?.['delete']?.href) {
+                  <button
+                    tuiIconButton
+                    type="button"
+                    size="xs"
+                    appearance="negative"
+                    [disabled]="deletingTestPlanId() !== null"
+                    (click)="deleteTestPlan.emit(testPlan)"
+                    aria-label="Delete test plan"
+                    title="Delete test plan"
+                  >
+                    @if (deletingTestPlanId() === testPlan.id) {
+                      <tui-loader size="s" [inheritColor]="true" aria-label="Deleting test plan" />
+                    } @else {
+                      <mat-icon aria-hidden="true" fontSet="material-symbols-outlined"
+                        >delete</mat-icon
+                      >
+                    }
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3" class="resource-empty-cell">
+              @if (!hasSelectedContext()) {
+                Select an application and stage to load test plans.
+              } @else {
+                No {{ selectedTab() === 'retired' ? 'retired' : 'active' }} test plans are available
+                for the selected context.
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (testPlans().length > rowsPerPage) {
+    <footer class="resource-pagination">
+      <tui-pagination
+        size="m"
+        [length]="pageCount()"
+        [index]="pageIndex()"
+        (indexChange)="pageIndex.set($event)"
+      />
+    </footer>
+  }
+</section>

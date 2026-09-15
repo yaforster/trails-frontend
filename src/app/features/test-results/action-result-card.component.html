@@ -1,0 +1,59 @@
+﻿<article
+  class="action-card"
+  [class.action-success]="action().result.resultType === 'SUCCESS'"
+  [class.action-skipped]="action().result.resultType === 'SKIPPED'"
+  [class.action-failure]="
+    action().result.resultType === 'VALIDATION_FAILURE' ||
+    action().result.resultType === 'TECHNICAL_FAILURE'
+  "
+>
+  <div class="field-grid action-grid">
+    <div class="field-box">
+      <span>Action Result database ID</span>
+      <strong>{{ action().result.id ?? '-' }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Test Path result database ID</span>
+      <strong>{{ pathResultId() ?? '-' }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Action ID</span>
+      <strong>{{ action().result.actionID ?? '-' }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Result Type</span>
+      <strong
+        class="status-badge"
+        [class.status-success]="action().result.resultType === 'SUCCESS'"
+        [class.status-skipped]="action().result.resultType === 'SKIPPED'"
+        [class.status-failure]="
+          action().result.resultType === 'VALIDATION_FAILURE' ||
+          action().result.resultType === 'TECHNICAL_FAILURE'
+        "
+      >
+        {{ actionResultLabel(action().result.resultType) }}
+      </strong>
+    </div>
+    <div class="field-box">
+      <span>Action label</span>
+      <strong>{{ action().result.label ?? '-' }}</strong>
+    </div>
+    <div class="field-box wide-field">
+      <span>Message</span>
+      <strong>{{ action().result.resultMessage ?? '-' }}</strong>
+    </div>
+    <div class="field-box wide-field">
+      <span>Exception Message</span>
+      <strong>{{ action().result.exceptionMessageFromAction ?? '-' }}</strong>
+    </div>
+  </div>
+
+  @if (action().screenshotUrl) {
+    <div class="screenshot-frame">
+      <img
+        [src]="action().screenshotUrl"
+        [alt]="'Screenshot for action result ' + (action().result.id ?? '')"
+      />
+    </div>
+  }
+</article>

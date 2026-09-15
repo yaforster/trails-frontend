@@ -1,0 +1,30 @@
+﻿<section class="path-panel">
+  <h3>Test Path Result</h3>
+
+  <div class="field-grid compact-grid">
+    <div class="field-box">
+      <span>Path Result database ID</span>
+      <strong>{{ path().result.id ?? '-' }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Parent Test Set Result ID</span>
+      <strong>{{ testSetId() ?? '-' }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Actions in Path</span>
+      <strong>{{ path().actions.length }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Downloaded Artifacts</span>
+      <strong>{{ path().artifacts.length }}</strong>
+    </div>
+  </div>
+
+  <div class="action-list">
+    @for (action of path().actions; track action.result.id ?? $index) {
+      <app-action-result-card [action]="action" [pathResultId]="path().result.id" />
+    } @empty {
+      <p class="empty-state">No action results are available for this path.</p>
+    }
+  </div>
+</section>

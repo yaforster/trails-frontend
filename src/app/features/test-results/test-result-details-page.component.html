@@ -1,0 +1,102 @@
+﻿<section class="details-page">
+  <div class="details-toolbar">
+    <button
+      tuiIconButton
+      type="button"
+      size="s"
+      appearance="outline"
+      class="square-button"
+      (click)="backToResults()"
+      aria-label="Back to test results"
+    >
+      <svg lucideArrowLeft size="18"></svg>
+    </button>
+
+    <div class="details-title">
+      <h1>Test result details</h1>
+      <p>Test run, browser executions, paths, and undertaken actions.</p>
+    </div>
+
+    <div class="toolbar-actions">
+      @if (details(); as resultDetails) {
+        <button
+          tuiButton
+          type="button"
+          appearance="outline"
+          [disabled]="loading() || downloadingArtifacts() || savedFileCount(resultDetails) === 0"
+          (click)="downloadSavedFiles(resultDetails)"
+        >
+          @if (downloadingArtifacts()) {
+            <tui-loader size="s" [inheritColor]="true" aria-label="Downloading saved files" />
+          } @else {
+            <svg lucideDownload size="18"></svg>
+          }
+          Download files
+        </button>
+      }
+
+      <button
+        tuiButton
+        type="button"
+        appearance="outline"
+        [disabled]="loading() || !detailsRoute()"
+        (click)="reloadDetails()"
+      >
+        @if (loading()) {
+          <tui-loader size="s" [inheritColor]="true" aria-label="Reloading test result details" />
+        } @else {
+          <svg lucideRefreshCw size="18"></svg>
+        }
+        Reload
+      </button>
+    </div>
+  </div>
+
+  <section class="details-scroll-panel" aria-label="Test result details content">
+    @if (loading()) {
+      <div class="loading-panel" role="status" aria-label="Loading test result details">
+        <div class="details-skeleton" tuiSkeleton aria-hidden="true">
+          <section class="skeleton-panel">
+            <div class="skeleton-line skeleton-title"></div>
+            <div class="skeleton-line skeleton-subtitle"></div>
+            <div class="skeleton-fields">
+              <div class="skeleton-field"></div>
+              <div class="skeleton-field"></div>
+              <div class="skeleton-field"></div>
+            </div>
+          </section>
+
+          <section class="skeleton-panel">
+            <div class="skeleton-line skeleton-title"></div>
+            <div class="skeleton-line skeleton-subtitle"></div>
+            <div class="skeleton-fields">
+              <div class="skeleton-field"></div>
+              <div class="skeleton-field"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    }
+
+    @if (error()) {
+      <p class="details-error">{{ error() }}</p>
+    }
+
+    @if (details(); as resultDetails) {
+      <app-test-run-summary-panel
+        [details]="resultDetails"
+        [detailsRoute]="detailsRoute()"
+        [savedFileCount]="savedFileCount(resultDetails)"
+      />
+
+      @for (testSet of resultDetails.testSets; track testSet.result.id ?? $index) {
+        <app-test-set-result-panel
+          [testSet]="testSet"
+          [fallbackTestPlanLabel]="resultDetails.result.label"
+        />
+      } @empty {
+        <p class="empty-state">No browser executions are available for this test run.</p>
+      }
+    }
+  </section>
+</section>

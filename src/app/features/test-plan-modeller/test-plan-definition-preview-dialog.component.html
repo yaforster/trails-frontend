@@ -1,0 +1,67 @@
+@if (open()) {
+  <button
+    class="definition-preview-backdrop"
+    type="button"
+    aria-label="Close TestPlanDefinition JSON"
+    (click)="closeDialog()"
+  ></button>
+  <section
+    class="definition-preview-dialog"
+    role="dialog"
+    #dialog
+    tabindex="-1"
+    aria-modal="true"
+    aria-labelledby="definition-preview-title"
+    (keydown)="trapFocus($event)"
+  >
+    <header>
+      <h2 id="definition-preview-title">TestPlanDefinitionDTO</h2>
+      <div class="definition-preview-actions">
+        <button type="button" (click)="copy()">
+          <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">content_copy</mat-icon>
+          Copy
+        </button>
+        <button type="button" (click)="download()">
+          <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">download</mat-icon>
+          Download
+        </button>
+        <button type="button" (click)="paste()">
+          <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">content_paste</mat-icon>
+          Paste
+        </button>
+        <button type="button" (click)="closeDialog()" aria-label="Close TestPlanDefinition JSON">
+          <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">close</mat-icon>
+        </button>
+      </div>
+    </header>
+    <label tuiInputFiles>
+      <input
+        tuiInputFiles
+        accept="application/json,.json"
+        [formControl]="fileControl"
+        (reject)="onFileRejected()"
+      />
+    </label>
+    @if (fileControl.value; as file) {
+      <tui-files>
+        <tui-file [file]="file" (remove)="removeFile()" />
+      </tui-files>
+    }
+    <textarea
+      aria-label="TestPlanDefinitionDTO JSON"
+      [value]="draft()"
+      (input)="onDraftInput($event)"
+    ></textarea>
+    @if (fileError() || clipboardError() || importError()) {
+      <p class="definition-preview-error" role="alert">
+        {{ fileError() ?? clipboardError() ?? importError() }}
+      </p>
+    }
+    <footer>
+      <button type="button" class="definition-preview-import" (click)="import()">
+        <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">upload</mat-icon>
+        Import JSON
+      </button>
+    </footer>
+  </section>
+}

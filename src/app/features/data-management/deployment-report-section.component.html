@@ -1,0 +1,87 @@
+@if (canReportDeployments()) {
+  <section class="resource-panel deployment-card">
+    <header class="resource-panel-header">
+      <div>
+        <h2>Report deployment</h2>
+        <p>Record a version deployment for the selected application stage.</p>
+      </div>
+    </header>
+
+    @if (deploymentError()) {
+      <p tuiMessage appearance="negative">{{ deploymentError() }}</p>
+    }
+    @if (deploymentConfirmation()) {
+      <p tuiMessage appearance="positive">{{ deploymentConfirmation() }}</p>
+    }
+
+    <div class="deployment-form-grid">
+      <label>
+        <span>Application</span>
+        <select
+          [ngModel]="context.selectedApplicationId()"
+          (ngModelChange)="selectDeploymentApplication($event)"
+        >
+          <option [ngValue]="null">Select application</option>
+          @for (application of activeApplications(); track application.id) {
+            <option [ngValue]="application.id">{{ applicationOptionLabel(application) }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Stage</span>
+        <select
+          [ngModel]="context.selectedStageId()"
+          (ngModelChange)="selectDeploymentStage($event)"
+          [disabled]="context.stagesLoading() || context.selectedApplicationId() === null"
+        >
+          <option [ngValue]="null">Select stage</option>
+          @for (stage of activeStages(); track stage.id) {
+            <option [ngValue]="stage.id">{{ stageOptionLabel(stage) }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Version</span>
+        <input
+          type="text"
+          maxlength="160"
+          [ngModel]="deploymentVersion()"
+          (ngModelChange)="
+            deploymentVersion.set($event);
+            deploymentError.set(null);
+            deploymentConfirmation.set(null)
+          "
+        />
+      </label>
+
+      <label>
+        <span>Deployed at</span>
+        <input
+          type="datetime-local"
+          [ngModel]="deploymentDeployedAt()"
+          (ngModelChange)="
+            deploymentDeployedAt.set($event);
+            deploymentError.set(null);
+            deploymentConfirmation.set(null)
+          "
+        />
+      </label>
+
+      <div class="deployment-submit-row">
+        <button
+          tuiButton
+          type="button"
+          [disabled]="!canSubmitDeployment()"
+          (click)="reportDeployment()"
+        >
+          @if (deploymentLoading()) {
+            <tui-loader size="s" [inheritColor]="true" aria-label="Reporting deployment" />
+          }
+          Report deployment
+        </button>
+      </div>
+    </div>
+  </section>
+}

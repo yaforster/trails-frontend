@@ -1,0 +1,222 @@
+<section class="resource-panel">
+  <header class="resource-panel-header">
+    <div>
+      <h2>Available test data profiles</h2>
+      <p>Public reusable data for test plan value computations.</p>
+    </div>
+
+    <div class="resource-toolbar">
+      @if (canShowRetiredTab()) {
+        <tui-segmented
+          size="s"
+          [activeItemIndex]="activeTabIndex()"
+          (activeItemIndexChange)="setTab($event)"
+        >
+          <button type="button">Active</button>
+          <button type="button">Retired</button>
+        </tui-segmented>
+      }
+
+      <div class="resource-toolbar-actions">
+        @if (canCreate()) {
+          <button tuiButton type="button" size="s" (click)="createProfile.emit()">
+            <svg lucidePlus size="18"></svg>
+            Add profile
+          </button>
+        }
+
+        <button
+          tuiButton
+          type="button"
+          size="s"
+          appearance="outline"
+          [disabled]="loading()"
+          (click)="reload.emit()"
+        >
+          @if (loading()) {
+            <tui-loader size="s" [inheritColor]="true" aria-label="Reloading test data profiles" />
+          } @else {
+            <svg lucideRefreshCw size="18"></svg>
+          }
+          Reload
+        </button>
+      </div>
+    </div>
+  </header>
+
+  @if (error()) {
+    <p tuiMessage appearance="negative">{{ error() }}</p>
+  }
+
+  <div class="test-data-grid">
+    <section class="resource-subpanel">
+      <div class="resource-table-scroll">
+        <table class="resource-table">
+          <thead>
+            <tr>
+              <th class="test-data-id-column">ID</th>
+              <th>Label</th>
+              <th class="test-data-value-count-column">Values</th>
+              <th class="test-data-actions-column">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (profile of visibleProfiles(); track profile.id ?? $index) {
+              <tr [class.selected-resource-row]="selectedProfileId() === profile.id">
+                <td class="test-data-id-column">{{ profile.id ?? '-' }}</td>
+                <td>
+                  <button
+                    type="button"
+                    class="resource-link-button"
+                    (click)="selectProfileRow(profile)"
+                  >
+                    {{ profile.label ?? '-' }}
+                  </button>
+                </td>
+                <td class="test-data-value-count-column">{{ profile.values?.length ?? 0 }}</td>
+                <td class="test-data-actions-column">
+                  <div class="table-actions">
+                    @if (profile.retired === true) {
+                      @if (profile._links?.['restore']?.href) {
+                        <button
+                          tuiIconButton
+                          type="button"
+                          size="xs"
+                          appearance="positive"
+                          (click)="restoreProfile.emit(profile)"
+                          aria-label="Restore test data profile"
+                          title="Restore test data profile"
+                        >
+                          <mat-icon aria-hidden="true" fontSet="material-symbols-outlined"
+                            >restore_from_trash</mat-icon
+                          >
+                        </button>
+                      }
+                    } @else if (profile._links?.['update']?.href) {
+                      <button
+                        tuiIconButton
+                        type="button"
+                        size="xs"
+                        appearance="outline"
+                        (click)="editProfile.emit(profile)"
+                        aria-label="Edit test data profile"
+                        title="Edit test data profile"
+                      >
+                        <mat-icon aria-hidden="true" fontSet="material-symbols-outlined"
+                          >edit</mat-icon
+                        >
+                      </button>
+                    }
+
+                    @if (profile.retired !== true && profile._links?.['delete']?.href) {
+                      <button
+                        tuiIconButton
+                        type="button"
+                        size="xs"
+                        appearance="negative"
+                        [disabled]="deletingProfileId() !== null"
+                        (click)="deleteProfile.emit(profile)"
+                        aria-label="Retire test data profile"
+                        title="Retire test data profile"
+                      >
+                        @if (deletingProfileId() === profile.id) {
+                          <tui-loader
+                            size="s"
+                            [inheritColor]="true"
+                            aria-label="Retiring test data profile"
+                          />
+                        } @else {
+                          <mat-icon aria-hidden="true" fontSet="material-symbols-outlined"
+                            >delete</mat-icon
+                          >
+                        }
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="resource-empty-cell">
+                  No {{ selectedTab() === 'retired' ? 'retired' : 'active' }} test data profiles are
+                  available.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (profiles().length > profileRowsPerPage) {
+        <footer class="resource-pagination">
+          <tui-pagination
+            size="m"
+            [length]="profilePageCount()"
+            [index]="profilePageIndex()"
+            (indexChange)="profilePageIndex.set($event)"
+          />
+        </footer>
+      }
+    </section>
+
+    <section class="test-data-values-panel">
+      <div class="values-panel-heading">
+        <h2>{{ selectedProfile()?.label ?? 'Select a test data profile' }}</h2>
+        @if (selectedProfile()?._links?.['update']?.href && selectedProfile()?.retired !== true) {
+          <button
+            tuiButton
+            type="button"
+            size="m"
+            appearance="outline"
+            (click)="selectedProfile() && editProfile.emit(selectedProfile()!)"
+          >
+            <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">edit</mat-icon>
+            Edit values
+          </button>
+        }
+      </div>
+
+      <div class="resource-table-scroll">
+        <table class="resource-table">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (entry of visibleEntries(); track entry.key + ':' + entry.value + ':' + $index) {
+              <tr>
+                <td class="test-data-key-cell">{{ entry.key }}</td>
+                <td class="test-data-value-cell">{{ entry.value }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="2" class="resource-empty-cell">
+                  @if (selectedProfile()) {
+                    This profile does not contain key-value pairs yet.
+                  } @else {
+                    Select a profile to inspect its key-value pairs.
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (selectedEntries().length > entryRowsPerPage) {
+        <footer class="resource-pagination">
+          <tui-pagination
+            size="m"
+            [length]="entryPageCount()"
+            [index]="entryPageIndex()"
+            (indexChange)="entryPageIndex.set($event)"
+          />
+        </footer>
+      }
+    </section>
+  </div>
+</section>

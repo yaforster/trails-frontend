@@ -1,0 +1,2730 @@
+openapi: 3.0.3
+info:
+  title: Trails API
+  description: API for navigating the data and functions of the trails web service.
+  version: 1.0.0
+
+servers:
+  - url: /
+
+security:
+  - bearerAuth: []
+
+paths:
+  /user/profiles:
+    get:
+      summary: List stored user profiles
+      description: Paginated list of stored user profiles. Requires the configured trails admin role.
+      operationId: listUsers
+      tags:
+        - user
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: A page of stored user profiles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedUserProfile'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /user/profile:
+    get:
+      summary: Get current user's profile
+      operationId: getProfile
+      tags:
+        - user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user's profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+    put:
+      summary: Replace current user's profile
+      operationId: updateProfile
+      tags:
+        - user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileUpdate'
+      responses:
+        '200':
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  /user/profile/{userId}:
+    delete:
+      summary: Remove stored user profile data
+      description: Deletes the stored profile and profile picture data for the given user. Requires the configured trails admin role.
+      operationId: deleteUserData
+      tags:
+        - user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Stable user identity from the JWT `sub` claim.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: User profile data removed
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /user/profile/avatar:
+    get:
+      summary: Download current user's profile picture
+      operationId: getProfilePicture
+      tags:
+        - user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Screenshot image
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+    put:
+      summary: Upload or replace current user's profile picture
+      operationId: updateProfilePicture
+      tags:
+        - user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Profile picture updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfilePictureResource'
+    delete:
+      summary: Remove current user's profile picture
+      operationId: deleteProfilePicture
+      tags:
+        - user
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Profile picture removed
+
+  /api/capabilities:
+    get:
+      tags:
+        - capabilities
+      summary: List service capabilities
+      description: Technical service for capabilities that clients can use to align their own validation rules.
+      operationId: listCapabilities
+      responses:
+        '200':
+          description: Service capabilities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Capability'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/test-data:
+    put:
+      tags:
+        - test-data
+      summary: Create a new test data set
+      description: Stores reusable key-value test data in the primary database.
+      operationId: createNewTestData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestDataSetDefinition'
+      responses:
+        '201':
+          description: Created test data set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestDataSet'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    get:
+      tags:
+        - test-data
+      summary: List test data sets
+      operationId: listTestData
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/IncludeRetired'
+      responses:
+        '200':
+          description: Paginated test data sets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedTestDataSet'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/test-data/{testDataId}:
+    delete:
+      tags:
+        - test-data
+      summary: Retire a test data set
+      description: Mark a test data set as retired so it is no longer returned by default.
+      operationId: deleteTestData
+      parameters:
+        - $ref: '#/components/parameters/TestDataId'
+      responses:
+        '200':
+          description: The result of the retirement attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDeletionResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    get:
+      tags:
+        - test-data
+      summary: Get a test data set
+      operationId: getTestData
+      parameters:
+        - $ref: '#/components/parameters/TestDataId'
+        - $ref: '#/components/parameters/IncludeRetired'
+      responses:
+        '200':
+          description: The specified test data set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestDataSet'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    put:
+      tags:
+        - test-data
+      summary: Replace a test data set
+      description: Updates reusable key-value test data in the primary database.
+      operationId: updateTestData
+      parameters:
+        - $ref: '#/components/parameters/TestDataId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestDataSetDefinition'
+      responses:
+        '200':
+          description: Updated test data set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestDataSet'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/test-data/{testDataId}/restore:
+    post:
+      tags:
+        - test-data
+      summary: Restore a retired test data set
+      description: Mark a retired test data set as active again.
+      operationId: restoreTestData
+      parameters:
+        - $ref: '#/components/parameters/TestDataId'
+      responses:
+        '200':
+          description: The result of the restore attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDeletionResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications:
+    put:
+      tags:
+        - application
+      summary: Create a new application
+      description: New application
+      operationId: createNewApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationDefinition'
+      responses:
+        '200':
+          description: Created application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersistedApplication'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    get:
+      tags:
+        - application
+      summary: List applications
+      description: Paginated list of all applications.
+      operationId: listApplications
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/IncludeRetired'
+      responses:
+        '200':
+          description: A page of applications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedApplication'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}:
+    delete:
+      tags:
+        - application
+      summary: Delete a given application
+      description: Delete application
+      operationId: deleteApplication
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+      responses:
+        '200':
+          description: The result of the deletion attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDeletionResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    get:
+      tags:
+        - application
+      summary: Get application
+      description: Retrieve a single application by ID.
+      operationId: getApplication
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/IncludeRetired'
+      responses:
+        '200':
+          description: The application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/restore:
+    post:
+      tags:
+        - application
+      summary: Restore a retired application
+      description: Mark a retired application as active again.
+      operationId: restoreApplication
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+      responses:
+        '200':
+          description: The result of the restore attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDeletionResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages:
+    put:
+      tags:
+        - stage
+      summary: Create a new stage
+      description: New stage
+      operationId: createNewStage
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StageDefinition'
+      responses:
+        '200':
+          description: Created stage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersistedStage'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    get:
+      tags:
+        - stage
+      summary: List stages of an application
+      operationId: listStages
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/IncludeRetired'
+      responses:
+        '200':
+          description: A page of stages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedStage'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{stageId}:
+    delete:
+      tags:
+        - stage
+      summary: Delete a given stage
+      description: Delete stage
+      operationId: deleteStage
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+      responses:
+        '200':
+          description: The result of the deletion attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDeletionResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    get:
+      tags:
+        - stage
+      summary: Get stage
+      operationId: getStage
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/IncludeRetired'
+      responses:
+        '200':
+          description: The stage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stage'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{stageId}/restore:
+    post:
+      tags:
+        - stage
+      summary: Restore a retired stage
+      description: Mark a retired stage as active again.
+      operationId: restoreStage
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+      responses:
+        '200':
+          description: The result of the restore attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDeletionResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{stageId}/elements:
+    put:
+      tags:
+        - element
+      summary: Create a new element
+      description: New element
+      operationId: createNewElement
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ElementDefinition'
+      responses:
+        '200':
+          description: Created element
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersistedElement'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    get:
+      tags:
+        - element
+      summary: List elements for a stage
+      operationId: listElements
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/IncludeRetired'
+      responses:
+        '200':
+          description: Paginated elements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedElement'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{stageId}/elements/{elementId}:
+    get:
+      tags:
+        - element
+      summary: Get element
+      operationId: getElement
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/ElementId'
+        - $ref: '#/components/parameters/IncludeRetired'
+      responses:
+        '200':
+          description: The specified element
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Element'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    put:
+      tags:
+        - element
+      summary: Update element
+      description: Update the editable fields of an active element.
+      operationId: updateElement
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/ElementId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ElementDefinition'
+      responses:
+        '200':
+          description: The updated element
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Element'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    delete:
+      tags:
+        - element
+      summary: delete a given element
+      operationId: deleteElement
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/ElementId'
+      responses:
+        '200':
+          description: The result of the deletion attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDeletionResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{stageId}/elements/{elementId}/restore:
+    post:
+      tags:
+        - element
+      summary: Restore a retired element
+      description: Mark a retired element as active again.
+      operationId: restoreElement
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/ElementId'
+      responses:
+        '200':
+          description: The result of the restore attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDeletionResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{sourceStageId}/elements/{elementId}/promote:
+    post:
+      tags:
+        - element
+      summary: Promote an element to another stage
+      description: Copy an active element and its screenshot to another active stage in the same application.
+      operationId: promoteElement
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/SourceStageId'
+        - $ref: '#/components/parameters/ElementId'
+        - $ref: '#/components/parameters/TargetStageId'
+      responses:
+        '201':
+          description: The copied element in the target stage
+          headers:
+            Location:
+              description: URI of the copied element
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Element'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{stageId}/elements/{elementId}/screenshot:
+    get:
+      tags:
+        - element
+      summary: Download element screenshot
+      operationId: getElementScreenshot
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/ElementId'
+      responses:
+        '200':
+          description: Screenshot image
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    delete:
+      tags:
+        - element
+      summary: delete element screenshot
+      operationId: deleteElementScreenshot
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/ElementId'
+      responses:
+        '200':
+          description: The result of the deletion attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDeletionResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    put:
+      tags:
+        - element
+      summary: Upload element screenshot
+      operationId: uploadElementScreenshot
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/ElementId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Screenshot uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artifact'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{stageId}/testruns:
+    get:
+      tags:
+        - testrun
+      summary: List test runs
+      operationId: listTestRuns
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: A page of test runs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedTestRun'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{stageId}/testPlans:
+    put:
+      tags:
+        - testPlan
+      summary: Create a new test plan
+      description: New test plan
+      operationId: createNewTestPlan
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestPlanDefinition'
+      responses:
+        '200':
+          description: Created test plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersistedTestPlan'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    get:
+      tags:
+        - testPlan
+      summary: List test plans
+      operationId: listTestPlans
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/IncludeRetired'
+      responses:
+        '200':
+          description: A page of test plans
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedTestPlans'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{stageId}/testPlans/{testPlanId}:
+    delete:
+      tags:
+        - testPlan
+      summary: Delete a given test plan
+      description: Delete test plan
+      operationId: deleteTestPlan
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestPlanId'
+      responses:
+        '200':
+          description: The result of the deletion attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDeletionResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    get:
+      tags:
+        - testPlan
+      summary: Fetches a given test plan
+      description: fetches a test plan
+      operationId: getTestPlan
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestPlanId'
+        - $ref: '#/components/parameters/IncludeRetired'
+      responses:
+        '200':
+          description: The result of the deletion attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersistedTestPlan'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{stageId}/testPlans/{testPlanId}/restore:
+    post:
+      tags:
+        - testPlan
+      summary: Restore a retired test plan
+      description: Mark a retired test plan as active again.
+      operationId: restoreTestPlan
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestPlanId'
+      responses:
+        '200':
+          description: The result of the restore attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDeletionResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{sourceStageId}/testPlans/{testPlanId}/promote:
+    post:
+      tags:
+        - testPlan
+      summary: Promote a test plan to another stage
+      description: Copy an active test plan to another active stage in the same application and rewrite action element references to matching target-stage elements.
+      operationId: promoteTestPlan
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/SourceStageId'
+        - $ref: '#/components/parameters/TestPlanId'
+        - $ref: '#/components/parameters/TargetStageId'
+      responses:
+        '201':
+          description: The copied test plan in the target stage
+          headers:
+            Location:
+              description: URI of the copied test plan
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersistedTestPlan'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{stageId}/testPlans/{testPlanId}/actions:
+    get:
+      tags:
+        - action
+      summary: Fetches the actions a testplan executes
+      description: Fetches the actions a testplan executes
+      operationId: getActions
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestPlanId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: The result of the deletion attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedAction'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{stageId}/testPlans/{testPlanId}/statistics:
+    get:
+      tags:
+        - testrun
+      summary: Get test run statistics for a test plan
+      operationId: getTestRunStatistics
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestPlanId'
+      responses:
+        '200':
+          description: Aggregated test run statistics for the given test plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestRunStatistics'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/applications/{applicationId}/stages/{stageId}/testPlans/{testPlanId}/metrics/history:
+    get:
+      tags:
+        - testrun
+      summary: Get recent test run history for a test plan
+      description: Returns recent test runs in chronological order with aggregate counts for metrics dashboards.
+      operationId: getTestRunHistory
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestPlanId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: A page of test run history points for the given test plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedTestRunHistory'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/testruns/{applicationId}/{stageId}/{testRunId}:
+    get:
+      tags:
+        - testrun
+      summary: Get test run
+      operationId: getTestRun
+      parameters:
+        - $ref: '#/components/parameters/TestRunId'
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+      responses:
+        '200':
+          description: The test run
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersistedTestRunResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/testruns/{applicationId}/{stageId}/{testRunId}/print:
+    get:
+      tags:
+        - print
+      summary: Print test run result with nested test-set and path details
+      operationId: printTestRun
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestRunId'
+      responses:
+        '200':
+          description: Test run rendered as PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/testruns/{applicationId}/{stageId}/{testRunId}/browsers:
+    get:
+      tags:
+        - testset
+      summary: List browser executions
+      operationId: listBrowserResults
+      parameters:
+        - $ref: '#/components/parameters/TestRunId'
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: A page of browser execution results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedTestSetResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/testruns/{applicationId}/{stageId}/{testRunId}/browsers/{testSetResultId}:
+    get:
+      tags:
+        - testset
+      summary: Get browser execution result within the test-run hierarchy
+      operationId: getBrowserResultInTestRun
+      parameters:
+        - $ref: '#/components/parameters/TestRunId'
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestSetResultId'
+      responses:
+        '200':
+          description: Browser execution result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestSetResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/testruns/{applicationId}/{stageId}/{testRunId}/browsers/{testSetResultId}/print:
+    get:
+      tags:
+        - print
+      summary: Print browser execution result within the test-run hierarchy
+      operationId: printTestSetResultInTestRun
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestRunId'
+        - $ref: '#/components/parameters/TestSetResultId'
+      responses:
+        '200':
+          description: Browser execution result rendered as PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/testruns/{applicationId}/{stageId}/{testRunId}/browsers/{testSetResultId}/paths:
+    get:
+      tags:
+        - testpath
+      summary: List test path results for a browser execution result
+      operationId: listPathResultsInTestSet
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestRunId'
+        - $ref: '#/components/parameters/TestSetResultId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: A page of path results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedTestPathResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/testruns/{applicationId}/{stageId}/{testRunId}/browsers/{testSetResultId}/paths/{pathResultId}:
+    get:
+      tags:
+        - testpath
+      summary: Get test path result within the test-run hierarchy
+      operationId: getPathResultInTestSet
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestRunId'
+        - $ref: '#/components/parameters/TestSetResultId'
+        - $ref: '#/components/parameters/PathResultId'
+      responses:
+        '200':
+          description: Test path result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestPathResult'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/testruns/{applicationId}/{stageId}/{testRunId}/browsers/{testSetResultId}/paths/{pathResultId}/print:
+    get:
+      tags:
+        - print
+      summary: Print test path result within the test-run hierarchy
+      operationId: printPathResultInTestSet
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestRunId'
+        - $ref: '#/components/parameters/TestSetResultId'
+        - $ref: '#/components/parameters/PathResultId'
+      responses:
+        '200':
+          description: Test path result rendered as PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/testruns/{applicationId}/{stageId}/{testRunId}/browsers/{testSetResultId}/paths/{pathResultId}/actions/chain:
+    get:
+      tags:
+        - actionResult
+      summary: List ordered action results for a path within the test-run hierarchy
+      operationId: listActionResultsChainInTestPath
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestRunId'
+        - $ref: '#/components/parameters/TestSetResultId'
+        - $ref: '#/components/parameters/PathResultId'
+      responses:
+        '200':
+          description: Ordered action-result chain for this path
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResultChain'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/testruns/{applicationId}/{stageId}/{testRunId}/browsers/{testSetResultId}/paths/{pathResultId}/actions/chain/screenshots/{actionResultId}:
+    get:
+      tags:
+        - artifact
+      summary: Download screenshot for one action result in a path within the test-run hierarchy
+      operationId: downloadActionResultScreenshotInTestPath
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestRunId'
+        - $ref: '#/components/parameters/TestSetResultId'
+        - $ref: '#/components/parameters/PathResultId'
+        - $ref: '#/components/parameters/ActionResultId'
+      responses:
+        '200':
+          description: Screenshot image
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/testruns/{applicationId}/{stageId}/{testRunId}/browsers/{testSetResultId}/paths/{pathResultId}/artifacts:
+    get:
+      tags:
+        - artifact
+      summary: List artifacts for a test path within the test-run hierarchy
+      operationId: listArtifactsInTestPath
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestRunId'
+        - $ref: '#/components/parameters/TestSetResultId'
+        - $ref: '#/components/parameters/PathResultId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: A page of artifacts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedArtifact'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/testruns/{applicationId}/{stageId}/{testRunId}/browsers/{testSetResultId}/paths/{pathResultId}/artifacts/{artifactId}:
+    get:
+      tags:
+        - artifact
+      summary: Download artifact for a test path within the test-run hierarchy
+      operationId: downloadArtifactInTestPath
+      parameters:
+        - $ref: '#/components/parameters/ApplicationId'
+        - $ref: '#/components/parameters/StageId'
+        - $ref: '#/components/parameters/TestRunId'
+        - $ref: '#/components/parameters/TestSetResultId'
+        - $ref: '#/components/parameters/PathResultId'
+        - $ref: '#/components/parameters/ArtifactId'
+      responses:
+        '200':
+          description: Binary artifact
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /api/test:
+    post:
+      tags:
+        - test
+      operationId: runTest
+      summary: Start test execution asynchronously
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestPlanRunDefinition'
+      responses:
+        '202':
+          description: Test execution accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestExecutionAccepted'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    Size:
+      name: size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    IncludeRetired:
+      name: includeRetired
+      in: query
+      description: Include retired entities in read responses when true.
+      schema:
+        type: boolean
+        default: false
+
+    ExecutionId:
+      name: executionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    TestDataId:
+      name: testDataId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+    ApplicationId:
+      name: applicationId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+    StageId:
+      name: stageId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+    SourceStageId:
+      name: sourceStageId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+    TargetStageId:
+      name: targetStageId
+      in: query
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+    TestPlanId:
+      name: testPlanId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+    ElementId:
+      name: elementId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+    TestRunId:
+      name: testRunId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+    TestSetResultId:
+      name: testSetResultId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+    PathResultId:
+      name: pathResultId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+    ActionResultId:
+      name: actionResultId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+    ArtifactId:
+      name: artifactId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+  responses:
+    ErrorResponse:
+      description: Error response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ValidationError'
+        application/problem+json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ValidationError'
+
+  schemas:
+    Links:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Link'
+
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+        method:
+          type: string
+          description: HTTP method to use when following the link.
+        templated:
+          type: boolean
+          description: Whether the href contains URI template variables.
+
+    CapabilityName:
+      type: string
+      enum:
+        - USER_IMAGE_MAX_SIZE_BYTES
+        - USER_IMAGE_MAX_WIDTH
+        - USER_IMAGE_MAX_HEIGHT
+        - SUPPORTED_IMAGE_FORMATS
+        - FILE_DOWNLOAD_TIMEOUT_MILLIS
+        - FILE_DOWNLOAD_BASE_DIRECTORY
+        - USER_FEATURES_ACTIVE
+
+    Capability:
+      type: object
+      required:
+        - name
+        - description
+        - value
+      properties:
+        name:
+          $ref: '#/components/schemas/CapabilityName'
+        description:
+          type: string
+        value:
+          type: string
+
+    PageMetadata:
+      type: object
+      properties:
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+
+    DatabaseDeletionResult:
+      type: object
+      properties:
+        message:
+          type: string
+        deletionRequestedForID:
+          type: integer
+          format: int64
+          description: The identifier for which the deletion was requested.
+        deletionResult:
+          type: boolean
+          description: The outcome of the deletion attempt. True if the given element was deleted from the database.
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    TestPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        label:
+          type: string
+        retired:
+          type: boolean
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestPlanGroup'
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    PagedApplication:
+      allOf:
+        - $ref: '#/components/schemas/PageMetadata'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Application'
+            _links:
+              $ref: '#/components/schemas/Links'
+
+    PagedStage:
+      allOf:
+        - $ref: '#/components/schemas/PageMetadata'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Stage'
+            _links:
+              $ref: '#/components/schemas/Links'
+
+    PagedElement:
+      allOf:
+        - $ref: '#/components/schemas/PageMetadata'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Element'
+            _links:
+              $ref: '#/components/schemas/Links'
+
+    PagedTestDataSet:
+      allOf:
+        - $ref: '#/components/schemas/PageMetadata'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/TestDataSet'
+            _links:
+              $ref: '#/components/schemas/Links'
+
+    PagedTestRun:
+      allOf:
+        - $ref: '#/components/schemas/PageMetadata'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/PersistedTestRunResult'
+            _links:
+              $ref: '#/components/schemas/Links'
+
+    PagedTestRunHistory:
+      allOf:
+        - $ref: '#/components/schemas/PageMetadata'
+        - type: object
+          properties:
+            applicationId:
+              type: integer
+              format: int64
+            stageId:
+              type: integer
+              format: int64
+            testPlanId:
+              type: integer
+              format: int64
+            totalRuns:
+              type: integer
+              format: int64
+            successfulRuns:
+              type: integer
+              format: int64
+            partialSuccessRuns:
+              type: integer
+              format: int64
+            failedRuns:
+              type: integer
+              format: int64
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/TestRunHistoryPoint'
+            _links:
+              $ref: '#/components/schemas/Links'
+
+    PagedTestSetResult:
+      allOf:
+        - $ref: '#/components/schemas/PageMetadata'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/TestSetResult'
+            _links:
+              $ref: '#/components/schemas/Links'
+
+    PagedTestPathResult:
+      allOf:
+        - $ref: '#/components/schemas/PageMetadata'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/TestPathResult'
+            _links:
+              $ref: '#/components/schemas/Links'
+
+    PagedActionResult:
+      allOf:
+        - $ref: '#/components/schemas/PageMetadata'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/ActionResult'
+            _links:
+              $ref: '#/components/schemas/Links'
+
+    ActionResultChain:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionResult'
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    PagedAction:
+      allOf:
+        - $ref: '#/components/schemas/PageMetadata'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Action'
+            _links:
+              $ref: '#/components/schemas/Links'
+
+    PagedArtifact:
+      allOf:
+        - $ref: '#/components/schemas/PageMetadata'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Artifact'
+            _links:
+              $ref: '#/components/schemas/Links'
+
+    ElementDefinition:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ElementType'
+        label:
+          type: string
+        locatorString:
+          type: string
+        locatorType:
+          $ref: '#/components/schemas/LocatorType'
+
+    TestDataEntry:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+      required:
+        - key
+        - value
+
+    TestDataSetDefinition:
+      type: object
+      properties:
+        label:
+          type: string
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestDataEntry'
+      required:
+        - label
+        - values
+
+    TestDataSet:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        label:
+          type: string
+        creationDate:
+          type: string
+          format: date-time
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestDataEntry'
+        retired:
+          type: boolean
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    ApplicationDefinition:
+      type: object
+      properties:
+        label:
+          type: string
+
+    Application:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        label:
+          type: string
+        retired:
+          type: boolean
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    StageDefinition:
+      type: object
+      properties:
+        label:
+          type: string
+        url:
+          type: string
+          format: uri
+
+    Stage:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        label:
+          type: string
+        url:
+          type: string
+        retired:
+          type: boolean
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    TestRunResult:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        indicator:
+          $ref: '#/components/schemas/ResultIndicator'
+        applicationId:
+          type: integer
+          format: int64
+        stageId:
+          type: integer
+          format: int64
+        label:
+          type: string
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    PersistedTestRunResult:
+      allOf:
+        - $ref: '#/components/schemas/TestRunResult'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+
+    TestRunStatistics:
+      type: object
+      properties:
+        applicationId:
+          type: integer
+          format: int64
+        stageId:
+          type: integer
+          format: int64
+        testPlanId:
+          type: integer
+          format: int64
+        totalRuns:
+          type: integer
+          format: int64
+        successfulRuns:
+          type: integer
+          format: int64
+        partialSuccessRuns:
+          type: integer
+          format: int64
+        failedRuns:
+          type: integer
+          format: int64
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    TestRunHistoryPoint:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        timestamp:
+          type: string
+          format: date-time
+        indicator:
+          $ref: '#/components/schemas/ResultIndicator'
+        label:
+          type: string
+
+    TestSetResult:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        totalRunTime:
+          type: integer
+          format: int32
+        browserToRunIn:
+          $ref: '#/components/schemas/Browser'
+        testPlanLabel:
+          type: string
+        testCaseResult:
+          $ref: '#/components/schemas/TestCaseResult'
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    TestCaseResult:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        testedInBrowser:
+          $ref: '#/components/schemas/Browser'
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    TestPathResult:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    ActionResult:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        actionID:
+          type: integer
+          format: int64
+        label:
+          type: string
+        resultMessage:
+          type: string
+        resultType:
+          type: string
+          enum: [SUCCESS, SKIPPED, VALIDATION_FAILURE, TECHNICAL_FAILURE]
+        exceptionMessageFromAction:
+          type: string
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    Artifact:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+          enum: [SCREENSHOT, LOG, PDF, OTHER]
+        filename:
+          type: string
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    Element:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          $ref: '#/components/schemas/ElementType'
+        label:
+          type: string
+        locatorString:
+          type: string
+        locatorType:
+          $ref: '#/components/schemas/LocatorType'
+        retired:
+          type: boolean
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    ElementType:
+      type: string
+      enum:
+        - SELECT
+        - RADIO
+        - BUTTON
+        - TEXT
+        - INPUT
+        - CHECKBOX
+        - COLORPICKER
+        - DATEPICKER
+        - DATETIMEPICKER
+        - FILEUPLOAD
+        - RANGE
+        - TIME
+        - WEEK
+
+    Browser:
+      type: string
+      enum:
+        - EDGE
+        - CHROME
+        - FIREFOX
+
+    LocatorType:
+      type: string
+      enum:
+        - XPATH
+        - CSS
+
+    ValidationError:
+      type: object
+      required:
+        - code
+        - message
+        - path
+      properties:
+        code:
+          type: string
+          example: 'PERSON_BIRTHDAY_INVALID'
+        message:
+          type: string
+          example: 'Birthday is not a valid date.'
+        path:
+          type: string
+          example: '/person/birthday'
+
+    PersistedApplication:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        label:
+          type: string
+        retired:
+          type: boolean
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    PersistedStage:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        label:
+          type: string
+        url:
+          type: string
+          format: uri
+        retired:
+          type: boolean
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    PersistedElement:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          $ref: '#/components/schemas/ElementType'
+        locator:
+          type: string
+          deprecated: true
+        locatorString:
+          type: string
+        locatorType:
+          $ref: '#/components/schemas/LocatorType'
+        label:
+          type: string
+        retired:
+          type: boolean
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    ActionDefinition:
+      type: object
+      required:
+        - referenceID
+        - details
+      properties:
+        label:
+          type: string
+        referenceID:
+          type: integer
+          format: int64
+          description: one-time-ID for other actions to reference to when defining action chains
+        delayAfterAction:
+          type: integer
+          description: milliseconds to wait after performing the action, for example to wait for a loading process triggered by the action to complete
+        nextActions:
+          type: array
+          description: ID of the actions after this one.
+          items:
+            type: integer
+            format: int64
+        position:
+          $ref: '#/components/schemas/Position'
+        details:
+          $ref: '#/components/schemas/ActionDetails'
+    ActionDetailsType:
+      type: string
+      enum:
+        - CHECK_EXISTENCE
+        - CLICK
+        - TYPING
+        - SWITCH_WEBSITE
+        - SELECTION
+        - TEXT_CHECK
+        - LOCAL_STORAGE_SEARCH
+        - SESSION_STORAGE_SEARCH
+        - COOKIE_SEARCH
+        - EXPLICIT_WAIT
+        - ELEMENT_VALUE_CHECK
+        - DOWNLOADED_FILE_CHECK
+        - DOWNLOADED_DOCUMENT_TEXT_CHECK
+        - VIEWPORT_MOVE
+        - COORDINATE_CLICK
+        - RESIZE_VIEWPORT
+    ViewportMove:
+      type: string
+      enum:
+        - SCROLL_BY
+        - PAGE_FLIP
+        - SCROLL_TO_TOP
+        - SCROLL_TO_BOTTOM
+    ViewportMoveDirection:
+      type: string
+      enum:
+        - UP
+        - DOWN
+    ViewportMoveUnit:
+      type: string
+      enum:
+        - PIXELS
+        - VIEWPORTS
+    ElementValueCheckSource:
+      type: string
+      enum:
+        - ATTRIBUTE
+        - CSS_VALUE
+        - PROPERTY
+    ActionDetails:
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/CheckExistenceDetails'
+        - $ref: '#/components/schemas/ClickDetails'
+        - $ref: '#/components/schemas/TypingDetails'
+        - $ref: '#/components/schemas/SwitchWebsiteDetails'
+        - $ref: '#/components/schemas/SelectionDetails'
+        - $ref: '#/components/schemas/TextCheckDetails'
+        - $ref: '#/components/schemas/LocalStorageSearchDetails'
+        - $ref: '#/components/schemas/SessionStorageSearchDetails'
+        - $ref: '#/components/schemas/CookieSearchDetails'
+        - $ref: '#/components/schemas/ExplicitWaitDetails'
+        - $ref: '#/components/schemas/ElementValueCheckDetails'
+        - $ref: '#/components/schemas/DownloadedFileCheckDetails'
+        - $ref: '#/components/schemas/DownloadedDocumentTextCheckDetails'
+        - $ref: '#/components/schemas/ViewportMoveDetails'
+        - $ref: '#/components/schemas/CoordinateClickDetails'
+        - $ref: '#/components/schemas/ResizeViewportDetails'
+      discriminator:
+        propertyName: detailsType
+        mapping:
+          CHECK_EXISTENCE: '#/components/schemas/CheckExistenceDetails'
+          CLICK: '#/components/schemas/ClickDetails'
+          TYPING: '#/components/schemas/TypingDetails'
+          SWITCH_WEBSITE: '#/components/schemas/SwitchWebsiteDetails'
+          SELECTION: '#/components/schemas/SelectionDetails'
+          TEXT_CHECK: '#/components/schemas/TextCheckDetails'
+          LOCAL_STORAGE_SEARCH: '#/components/schemas/LocalStorageSearchDetails'
+          SESSION_STORAGE_SEARCH: '#/components/schemas/SessionStorageSearchDetails'
+          COOKIE_SEARCH: '#/components/schemas/CookieSearchDetails'
+          EXPLICIT_WAIT: '#/components/schemas/ExplicitWaitDetails'
+          ELEMENT_VALUE_CHECK: '#/components/schemas/ElementValueCheckDetails'
+          DOWNLOADED_FILE_CHECK: '#/components/schemas/DownloadedFileCheckDetails'
+          DOWNLOADED_DOCUMENT_TEXT_CHECK: '#/components/schemas/DownloadedDocumentTextCheckDetails'
+          VIEWPORT_MOVE: '#/components/schemas/ViewportMoveDetails'
+          COORDINATE_CLICK: '#/components/schemas/CoordinateClickDetails'
+          RESIZE_VIEWPORT: '#/components/schemas/ResizeViewportDetails'
+      required:
+        - detailsType
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+    CheckExistenceDetails:
+      type: object
+      x-discriminator-value: CHECK_EXISTENCE
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        elementID:
+          type: integer
+          format: int64
+      required:
+        - detailsType
+        - elementID
+    ClickDetails:
+      type: object
+      x-discriminator-value: CLICK
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        elementID:
+          type: integer
+          format: int64
+      required:
+        - detailsType
+        - elementID
+    CoordinateClickDetails:
+      type: object
+      x-discriminator-value: COORDINATE_CLICK
+      description: Clicks once at viewport CSS-pixel coordinates measured from the current visible top-left corner.
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        xCoordinate:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Horizontal viewport CSS-pixel coordinate measured from the current visible top-left corner.
+        yCoordinate:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Vertical viewport CSS-pixel coordinate measured from the current visible top-left corner.
+      required:
+        - detailsType
+        - xCoordinate
+        - yCoordinate
+    ResizeViewportDetails:
+      type: object
+      x-discriminator-value: RESIZE_VIEWPORT
+      description: >-
+        Resizes the current browser window once so window.innerWidth and window.innerHeight exactly match the requested
+        CSS-pixel dimensions. An exact mismatch is a technical failure; its result reports requested and last measured
+        viewport dimensions when available, plus cause.
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        viewportWidth:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Required exact target for window.innerWidth in CSS pixels.
+        viewportHeight:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Required exact target for window.innerHeight in CSS pixels.
+      required:
+        - detailsType
+        - viewportWidth
+        - viewportHeight
+    TypingDetails:
+      type: object
+      x-discriminator-value: TYPING
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        elementID:
+          type: integer
+          format: int64
+        clearBeforeTyping:
+          type: boolean
+          default: false
+          description: Whether the target input should be cleared before text is sent.
+        delayAfterClearMillis:
+          type: integer
+          format: int64
+          minimum: 0
+          default: 0
+          description: Delay in milliseconds after clearing the target input and before sending text.
+        valueComputation:
+          $ref: '#/components/schemas/ValueComputationInstruction'
+      required:
+        - detailsType
+        - elementID
+        - clearBeforeTyping
+        - delayAfterClearMillis
+        - valueComputation
+    SwitchWebsiteDetails:
+      type: object
+      x-discriminator-value: SWITCH_WEBSITE
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        valueComputation:
+          $ref: '#/components/schemas/ValueComputationInstruction'
+      required:
+        - detailsType
+        - valueComputation
+    SelectionDetails:
+      type: object
+      x-discriminator-value: SELECTION
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        elementID:
+          type: integer
+          format: int64
+        valueComputation:
+          $ref: '#/components/schemas/ValueComputationInstruction'
+      required:
+        - detailsType
+        - elementID
+        - valueComputation
+    TextCheckDetails:
+      type: object
+      x-discriminator-value: TEXT_CHECK
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        elementID:
+          type: integer
+          format: int64
+        valueComputation:
+          $ref: '#/components/schemas/ValueComputationInstruction'
+      required:
+        - detailsType
+        - elementID
+        - valueComputation
+    LocalStorageSearchDetails:
+      type: object
+      x-discriminator-value: LOCAL_STORAGE_SEARCH
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        storageKey:
+          type: string
+        valueComputation:
+          $ref: '#/components/schemas/ValueComputationInstruction'
+      required:
+        - detailsType
+        - storageKey
+        - valueComputation
+    SessionStorageSearchDetails:
+      type: object
+      x-discriminator-value: SESSION_STORAGE_SEARCH
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        storageKey:
+          type: string
+        valueComputation:
+          $ref: '#/components/schemas/ValueComputationInstruction'
+      required:
+        - detailsType
+        - storageKey
+        - valueComputation
+    CookieSearchDetails:
+      type: object
+      x-discriminator-value: COOKIE_SEARCH
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        cookieName:
+          type: string
+        valueComputation:
+          $ref: '#/components/schemas/ValueComputationInstruction'
+      required:
+        - detailsType
+        - cookieName
+        - valueComputation
+    ExplicitWaitDetails:
+      type: object
+      x-discriminator-value: EXPLICIT_WAIT
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        delayMillis:
+          type: integer
+          format: int64
+          minimum: 0
+          default: 0
+          description: Delay time in milliseconds before the next action is executed.
+      required:
+        - detailsType
+        - delayMillis
+    ElementValueCheckDetails:
+      type: object
+      x-discriminator-value: ELEMENT_VALUE_CHECK
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        elementID:
+          type: integer
+          format: int64
+        valueSource:
+          $ref: '#/components/schemas/ElementValueCheckSource'
+        valueName:
+          type: string
+          description: Attribute name, CSS property name, or DOM property name to read from the target element.
+        valueComputation:
+          $ref: '#/components/schemas/ValueComputationInstruction'
+      required:
+        - detailsType
+        - elementID
+        - valueSource
+        - valueName
+        - valueComputation
+    DownloadedFileCheckDetails:
+      type: object
+      x-discriminator-value: DOWNLOADED_FILE_CHECK
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        fileName:
+          type: string
+          description: Exact downloaded file name expected after the action chain has run up to this point.
+      required:
+        - detailsType
+        - fileName
+    DownloadedDocumentTextCheckDetails:
+      type: object
+      x-discriminator-value: DOWNLOADED_DOCUMENT_TEXT_CHECK
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        fileName:
+          type: string
+          description: Exact downloaded document file name expected after the action chain has run up to this point.
+        expectedText:
+          type: string
+          description: Text expected inside the downloaded document.
+        caseSensitive:
+          type: boolean
+          default: false
+          description: Whether the expected text comparison should be case-sensitive.
+      required:
+        - detailsType
+        - fileName
+        - expectedText
+        - caseSensitive
+    ViewportMoveDetails:
+      type: object
+      x-discriminator-value: VIEWPORT_MOVE
+      properties:
+        detailsType:
+          $ref: '#/components/schemas/ActionDetailsType'
+        movement:
+          $ref: '#/components/schemas/ViewportMove'
+        direction:
+          $ref: '#/components/schemas/ViewportMoveDirection'
+        amount:
+          type: number
+          format: double
+          minimum: 0
+          default: 1
+          description: Number of pixels, viewport heights, or page flips to move.
+        unit:
+          $ref: '#/components/schemas/ViewportMoveUnit'
+        delayAfterMoveMillis:
+          type: integer
+          format: int64
+          minimum: 0
+          default: 0
+          description: Milliseconds to wait after moving before taking the action screenshot.
+      required:
+        - detailsType
+        - movement
+        - direction
+        - amount
+        - unit
+        - delayAfterMoveMillis
+    TestPlanDefinition:
+      type: object
+      properties:
+        label:
+          type: string
+        testSteps:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionDefinition'
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestPlanGroup'
+    TestPlanGroup:
+      type: object
+      required:
+        - xCoordinate
+        - yCoordinate
+        - widthPixels
+        - heightPixels
+      properties:
+        label:
+          type: string
+          maxLength: 255
+        xCoordinate:
+          type: number
+          format: double
+        yCoordinate:
+          type: number
+          format: double
+        widthPixels:
+          type: number
+          format: double
+          minimum: 1
+        heightPixels:
+          type: number
+          format: double
+          minimum: 1
+        actionReferenceIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+    TestPlanRunDefinition:
+      type: object
+      properties:
+        testPlanID:
+          type: integer
+          format: int64
+        browsersToTest:
+          type: array
+          items:
+            $ref: '#/components/schemas/Browser'
+
+    TestExecutionStatus:
+      type: string
+      enum:
+        - ACCEPTED
+        - RUNNING
+        - COMPLETED
+        - FAILED
+
+    TestExecutionAccepted:
+      type: object
+      properties:
+        executionId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/TestExecutionStatus'
+        message:
+          type: string
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    Position:
+      type: object
+      properties:
+        xCoordinate:
+          type: number
+        yCoordinate:
+          type: number
+
+    Action:
+      type: object
+      properties:
+        label:
+          type: string
+        actionID:
+          type: integer
+          format: int64
+          description: the database ID of this action. used to refer to this action inside the web service and the database, but not when defining action chains.
+        referenceID:
+          type: integer
+          format: int64
+          description: one-time-ID for other actions to reference to when defining action chains.
+        nextActions:
+          type: array
+          description: ID of the actions after this one.
+          items:
+            type: integer
+            format: int64
+        position:
+          $ref: '#/components/schemas/Position'
+        details:
+          $ref: '#/components/schemas/ActionDetails'
+
+    ValueComputationInstruction:
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/FixedValue'
+        - $ref: '#/components/schemas/RelativeDateInstruction'
+        - $ref: '#/components/schemas/RandomValue'
+        - $ref: '#/components/schemas/TimeStampInstruction'
+        - $ref: '#/components/schemas/EnvInstruction'
+        - $ref: '#/components/schemas/TestDataValueInstruction'
+      discriminator:
+        propertyName: computation
+        mapping:
+          FIXED: '#/components/schemas/FixedValue'
+          RELATIVE_DATE: '#/components/schemas/RelativeDateInstruction'
+          RANDOM: '#/components/schemas/RandomValue'
+          TIMESTAMP_NOW: '#/components/schemas/TimeStampInstruction'
+          SYSTEM_VAR: '#/components/schemas/EnvInstruction'
+          TEST_DATA: '#/components/schemas/TestDataValueInstruction'
+      required:
+        - computation
+      properties:
+        computation:
+          $ref: '#/components/schemas/ValueComputationType'
+
+    RandomValue:
+      type: object
+      properties:
+        computation:
+          $ref: '#/components/schemas/ValueComputationType'
+        prefix:
+          type: string
+        charPool:
+          type: string
+          description: a string containing every character that is used when generating the random part
+        randomStringLength:
+          type: integer
+        suffix:
+          type: string
+      required:
+        - computation
+        - prefix
+        - charPool
+        - randomStringLength
+        - suffix
+
+    FixedValue:
+      type: object
+      properties:
+        computation:
+          $ref: '#/components/schemas/ValueComputationType'
+        value:
+          type: string
+      required:
+        - computation
+        - value
+
+    TimeStampInstruction:
+      type: object
+      properties:
+        computation:
+          $ref: '#/components/schemas/ValueComputationType'
+        formatPattern:
+          type: string
+      required:
+        - computation
+        - formatPattern
+
+    EnvInstruction:
+      type: object
+      properties:
+        computation:
+          $ref: '#/components/schemas/ValueComputationType'
+        variableName:
+          type: string
+        defaultValue:
+          type: string
+      required:
+        - computation
+        - variableName
+        - defaultValue
+
+    RelativeDateInstruction:
+      type: object
+      properties:
+        computation:
+          $ref: '#/components/schemas/ValueComputationType'
+        offsetDays:
+          type: integer
+        formatPattern:
+          type: string
+      required:
+        - computation
+        - offsetDays
+        - formatPattern
+
+    TestDataValueInstruction:
+      type: object
+      properties:
+        computation:
+          $ref: '#/components/schemas/ValueComputationType'
+        testDataId:
+          type: integer
+          format: int64
+        key:
+          type: string
+      required:
+        - computation
+        - testDataId
+        - key
+
+    ResultIndicator:
+      type: string
+      enum:
+        - SUCCESS
+        - FAILURE
+        - PARTIAL_SUCCESS
+
+    ValueComputationType:
+      type: string
+      enum:
+        - FIXED
+        - RELATIVE_DATE
+        - RANDOM
+        - TIMESTAMP_NOW
+        - SYSTEM_VAR
+        - TEST_DATA
+
+    PersistedTestPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        label:
+          type: string
+        retired:
+          type: boolean
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestPlanGroup'
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    PagedTestPlans:
+      allOf:
+        - $ref: '#/components/schemas/PageMetadata'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/TestPlan'
+            _links:
+              $ref: '#/components/schemas/Links'
+
+    PagedUserProfile:
+      allOf:
+        - $ref: '#/components/schemas/PageMetadata'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserProfile'
+            _links:
+              $ref: '#/components/schemas/Links'
+
+    UserProfile:
+      type: object
+      required:
+        - userId
+        - links
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: Stable Keycloak user identity from the JWT `sub` claim.
+          readOnly: true
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+          example: tester@example.com
+        phoneNumber:
+          type: string
+          example: '+491701234567'
+        links:
+          $ref: '#/components/schemas/ProfileLinks'
+
+    UserProfileUpdate:
+      type: object
+      description: Full profile update. Values are stored exactly as sent.
+      additionalProperties: false
+      properties:
+        firstName:
+          type: string
+          nullable: true
+          maxLength: 100
+        lastName:
+          type: string
+          nullable: true
+          maxLength: 100
+        email:
+          type: string
+          nullable: true
+          format: email
+          maxLength: 255
+        phoneNumber:
+          type: string
+          nullable: true
+          maxLength: 50
+
+    ProfilePictureResource:
+      type: object
+      required:
+        - href
+        - contentType
+      properties:
+        href:
+          type: string
+          format: uri
+          example: /me/profile/picture
+        contentType:
+          type: string
+          example: image/jpeg
+        updatedAt:
+          type: string
+          format: date-time
+
+    ProfileLinks:
+      type: object
+      required:
+        - self
+      properties:
+        self:
+          $ref: '#/components/schemas/Link'
+        update:
+          $ref: '#/components/schemas/Link'
+        uploadProfilePicture:
+          $ref: '#/components/schemas/Link'
+        deleteProfilePicture:
+          $ref: '#/components/schemas/Link'
+        getProfilePicture:
+          $ref: '#/components/schemas/Link'
+        deleteUserData:
+          $ref: '#/components/schemas/Link'

@@ -1,0 +1,202 @@
+<app-test-plans-table
+  [testPlans]="displayedTestPlans()"
+  [selectedTab]="testPlansTab()"
+  [loading]="testPlansLoading()"
+  [error]="testPlansError()"
+  [openingTestPlanId]="openingTestPlanId()"
+  [deletingTestPlanId]="deletingTestPlanId()"
+  [runningTestPlanId]="runningTestPlanId()"
+  [canShowRetiredTab]="canShowRetiredTestPlansTab()"
+  [hasSelectedContext]="
+    context.selectedApplicationId() !== null && context.selectedStageId() !== null
+  "
+  (selectedTabChange)="selectTestPlansTab($event)"
+  (reload)="reloadTestPlans()"
+  (runTestPlan)="openRunDialog($event)"
+  (promoteTestPlan)="openPromoteTestPlanDialog($event)"
+  (openMetrics)="openTestPlanMetrics($event)"
+  (openTestPlan)="openTestPlan($event)"
+  (restoreTestPlan)="openRestoreTestPlanDialog($event)"
+  (deleteTestPlan)="deleteTestPlan($event)"
+/>
+
+<ng-template
+  [tuiDialog]="runDialogOpen()"
+  (tuiDialogChange)="$event ? runDialogOpen.set(true) : closeRunDialog()"
+  [tuiDialogOptions]="{
+    label: 'Run test plan',
+    size: 'l',
+    dismissible: !startingTestRun(),
+  }"
+>
+  <div class="run-dialog-content">
+    <div class="run-dialog-heading">
+      <h2>{{ runDialogTestPlan()?.label ?? 'Selected test plan' }}</h2>
+      <p>Select the browsers for this execution.</p>
+    </div>
+
+    <div class="browser-toggle-grid" role="group" aria-label="Browsers to execute">
+      @for (option of browserOptions; track option.browser) {
+        <button
+          class="browser-toggle"
+          type="button"
+          [class.active]="isBrowserSelected(option.browser)"
+          [attr.aria-pressed]="isBrowserSelected(option.browser)"
+          [disabled]="startingTestRun() || !!runConfirmation()"
+          (click)="toggleBrowser(option.browser)"
+        >
+          <img
+            [ngSrc]="option.iconSrc"
+            width="44"
+            height="44"
+            [alt]="option.label + ' browser icon'"
+          />
+          <span>{{ option.label }}</span>
+        </button>
+      }
+    </div>
+
+    @if (runError()) {
+      <p class="table-error">{{ runError() }}</p>
+    }
+
+    @if (runConfirmation()) {
+      <p class="run-confirmation">{{ runConfirmation() }}</p>
+    }
+
+    <div class="run-dialog-actions">
+      @if (runConfirmation() && !startingTestRun()) {
+        <button tuiButton type="button" appearance="outline" (click)="closeRunDialog()">
+          Close
+        </button>
+      } @else {
+        <button
+          tuiButton
+          type="button"
+          appearance="outline"
+          [disabled]="startingTestRun()"
+          (click)="closeRunDialog()"
+        >
+          Cancel
+        </button>
+
+        <button
+          tuiButton
+          type="button"
+          class="start-run-button"
+          [disabled]="startingTestRun() || selectedBrowsers().length === 0"
+          (click)="startTestRun()"
+        >
+          @if (startingTestRun()) {
+            <tui-loader size="s" [inheritColor]="true" aria-label="Starting test run" />
+          } @else {
+            <svg lucidePlay size="18"></svg>
+          }
+          Start test run
+        </button>
+      }
+    </div>
+  </div>
+</ng-template>
+
+<ng-template
+  [tuiDialog]="promoteDialogOpen()"
+  (tuiDialogChange)="$event ? promoteDialogOpen.set(true) : closePromoteDialog()"
+  [tuiDialogOptions]="{
+    label: 'Promote test plan',
+    size: 'm',
+    dismissible: !promoteLoading(),
+  }"
+>
+  <div class="promote-dialog-content">
+    <p>
+      Promote test plan "{{ promoteTarget()?.label }}" to another stage in the same application.
+    </p>
+
+    <label>
+      <span>Target stage</span>
+      <select
+        [ngModel]="promoteTargetStageId()"
+        (ngModelChange)="updatePromoteTargetStageId($event)"
+      >
+        <option [ngValue]="null">Select a stage</option>
+        @for (stage of promoteTargetStages(); track stage.id) {
+          <option [ngValue]="stage.id">{{ stage.label ?? 'Stage ' + stage.id }}</option>
+        }
+      </select>
+    </label>
+
+    @if (promoteTargetStages().length === 0) {
+      <p class="table-error">There is no other active stage available for this application.</p>
+    }
+
+    @if (promoteReadyToConfirm()) {
+      <p class="run-confirmation">
+        Review the target stage "{{ promoteTargetStage()?.label }}", then confirm promotion.
+      </p>
+    }
+
+    @if (promoteError()) {
+      <p class="table-error">{{ promoteError() }}</p>
+    }
+
+    <div class="run-dialog-actions">
+      <button
+        tuiButton
+        type="button"
+        appearance="outline"
+        [disabled]="promoteLoading()"
+        (click)="closePromoteDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        tuiButton
+        type="button"
+        [disabled]="promoteLoading() || promoteTargetStages().length === 0"
+        (click)="submitPromoteDialog()"
+      >
+        @if (promoteLoading()) {
+          <tui-loader size="s" [inheritColor]="true" aria-label="Promoting test plan" />
+        }
+        {{ promoteReadyToConfirm() ? 'Confirm promotion' : 'Review promotion' }}
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template
+  [tuiDialog]="restoreDialogOpen()"
+  (tuiDialogChange)="$event ? restoreDialogOpen.set(true) : closeRestoreDialog()"
+  [tuiDialogOptions]="{
+    label: 'Restore test plan',
+    size: 'm',
+    dismissible: !restoreLoading(),
+  }"
+>
+  <div class="restore-dialog-content">
+    <p>Restore test plan "{{ restoreTarget()?.label }}"?</p>
+
+    @if (restoreError()) {
+      <p class="table-error">{{ restoreError() }}</p>
+    }
+
+    <div class="run-dialog-actions">
+      <button
+        tuiButton
+        type="button"
+        appearance="outline"
+        [disabled]="restoreLoading()"
+        (click)="closeRestoreDialog()"
+      >
+        Cancel
+      </button>
+      <button tuiButton type="button" [disabled]="restoreLoading()" (click)="submitRestoreDialog()">
+        @if (restoreLoading()) {
+          <tui-loader size="s" [inheritColor]="true" aria-label="Restoring test plan" />
+        }
+        Confirm restore
+      </button>
+    </div>
+  </div>
+</ng-template>

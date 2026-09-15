@@ -1,0 +1,260 @@
+<section class="context-collapsible" aria-label="Execution context">
+  <header class="context-header">
+    <div class="context-heading">
+      <div class="context-title">
+        <svg lucideMonitorCog size="18"></svg>
+        <span>Execution context</span>
+      </div>
+
+      <div class="context-state">
+        <svg lucideLayers size="16"></svg>
+        <span>
+          {{ context.selectedApplication()?.label ?? 'No application selected' }}
+          /
+          {{ context.selectedStage()?.label ?? 'No stage selected' }}
+        </span>
+      </div>
+    </div>
+
+    <button
+      tuiIconButton
+      class="context-toggle"
+      type="button"
+      size="xs"
+      appearance="outline"
+      [class.expanded]="expanded()"
+      [attr.aria-expanded]="expanded()"
+      aria-controls="execution-context-controls"
+      aria-label="Toggle execution context"
+      (click)="toggleExpanded()"
+    >
+      <svg lucideChevronDown size="18"></svg>
+    </button>
+  </header>
+
+  @if (expanded()) {
+    <section
+      id="execution-context-controls"
+      class="context-panel"
+      aria-label="Execution context controls"
+    >
+      @if (context.error()) {
+        <p class="context-error">{{ context.error() }}</p>
+      }
+
+      @if (context.applicationsLoading()) {
+        <div class="context-skeleton" aria-hidden="true"></div>
+        <div class="context-skeleton" aria-hidden="true"></div>
+      } @else {
+        <div class="context-field">
+          <label class="context-field-label" for="execution-context-application">Application</label>
+          <div class="resource-control-row">
+            <select
+              id="execution-context-application"
+              [ngModel]="context.selectedApplicationId()"
+              (ngModelChange)="context.selectApplication($event)"
+            >
+              <option [ngValue]="null">Select application</option>
+              @for (application of context.applications(); track application.id) {
+                <option [ngValue]="application.id" [class.retired-option]="application.retired">
+                  {{ applicationOptionLabel(application) }}
+                </option>
+              }
+            </select>
+
+            @if (canCreateApplication()) {
+              <button
+                tuiIconButton
+                class="context-action-button"
+                type="button"
+                size="s"
+                appearance="outline"
+                aria-label="Create application"
+                (click)="openDialog('application-create')"
+              >
+                <svg lucidePlus size="16"></svg>
+              </button>
+            }
+            @if (selectedApplicationRetired()) {
+              @if (canRestoreApplication()) {
+                <button
+                  tuiIconButton
+                  class="context-action-button"
+                  type="button"
+                  size="s"
+                  appearance="positive"
+                  aria-label="Restore application"
+                  (click)="openDialog('application-restore')"
+                >
+                  <svg lucideArchiveRestore size="16"></svg>
+                </button>
+              }
+            } @else {
+              @if (canRetireApplication()) {
+                <button
+                  tuiIconButton
+                  class="context-action-button"
+                  type="button"
+                  size="s"
+                  appearance="negative"
+                  aria-label="Retire application"
+                  (click)="openDialog('application-retire')"
+                >
+                  <svg lucideTrash2 size="16"></svg>
+                </button>
+              }
+            }
+          </div>
+        </div>
+
+        <div class="context-field">
+          <label class="context-field-label" for="execution-context-stage">Stage</label>
+          @if (context.stagesLoading()) {
+            <span class="loading-select">
+              <tui-loader size="s" aria-label="Loading stages" />
+              <span>Loading stages</span>
+            </span>
+          } @else {
+            <div class="resource-control-row">
+              <select
+                id="execution-context-stage"
+                [ngModel]="context.selectedStageId()"
+                (ngModelChange)="context.selectStage($event)"
+              >
+                <option [ngValue]="null">Select stage</option>
+                @for (stage of context.stages(); track stage.id) {
+                  <option [ngValue]="stage.id" [class.retired-option]="stage.retired">
+                    {{ stageOptionLabel(stage) }}
+                  </option>
+                }
+              </select>
+
+              @if (canCreateStage()) {
+                <button
+                  tuiIconButton
+                  class="context-action-button"
+                  type="button"
+                  size="s"
+                  appearance="outline"
+                  aria-label="Create stage"
+                  (click)="openDialog('stage-create')"
+                >
+                  <svg lucidePlus size="16"></svg>
+                </button>
+              }
+              @if (selectedStageRetired()) {
+                @if (canRestoreStage()) {
+                  <button
+                    tuiIconButton
+                    class="context-action-button"
+                    type="button"
+                    size="s"
+                    appearance="positive"
+                    aria-label="Restore stage"
+                    (click)="openDialog('stage-restore')"
+                  >
+                    <svg lucideArchiveRestore size="16"></svg>
+                  </button>
+                }
+              } @else {
+                @if (canRetireStage()) {
+                  <button
+                    tuiIconButton
+                    class="context-action-button"
+                    type="button"
+                    size="s"
+                    appearance="negative"
+                    aria-label="Retire stage"
+                    (click)="openDialog('stage-retire')"
+                  >
+                    <svg lucideTrash2 size="16"></svg>
+                  </button>
+                }
+              }
+            </div>
+          }
+        </div>
+      }
+    </section>
+  }
+</section>
+
+<ng-template
+  [tuiDialog]="dialogMode() !== null"
+  (tuiDialogChange)="$event ? null : closeDialog()"
+  [tuiDialogOptions]="{
+    label: dialogHeader(),
+    size: 'm',
+    dismissible: !actionLoading(),
+  }"
+>
+  <div class="context-dialog-content">
+    @switch (dialogMode()) {
+      @case ('application-create') {
+        <label>
+          <span>Application label</span>
+          <input
+            type="text"
+            [ngModel]="applicationLabel()"
+            (ngModelChange)="applicationLabel.set($event)"
+            maxlength="120"
+          />
+        </label>
+      }
+      @case ('stage-create') {
+        <label>
+          <span>Stage label</span>
+          <input
+            type="text"
+            [ngModel]="stageLabel()"
+            (ngModelChange)="stageLabel.set($event)"
+            maxlength="120"
+          />
+        </label>
+        <label>
+          <span>Base URL</span>
+          <input type="url" [ngModel]="stageUrl()" (ngModelChange)="stageUrl.set($event)" />
+        </label>
+      }
+      @case ('application-retire') {
+        <p>
+          Retire application "{{ context.selectedApplication()?.label }}". Existing data remains
+          restorable.
+        </p>
+      }
+      @case ('stage-retire') {
+        <p>
+          Retire stage "{{ context.selectedStage()?.label }}". Existing data remains restorable.
+        </p>
+      }
+      @case ('application-restore') {
+        <p>Restore application "{{ context.selectedApplication()?.label }}".</p>
+      }
+      @case ('stage-restore') {
+        <p>Restore stage "{{ context.selectedStage()?.label }}".</p>
+      }
+    }
+
+    @if (actionError()) {
+      <p class="context-error">{{ actionError() }}</p>
+    }
+
+    <div class="dialog-actions">
+      <button
+        tuiButton
+        type="button"
+        appearance="outline"
+        [disabled]="actionLoading()"
+        (click)="closeDialog()"
+      >
+        Cancel
+      </button>
+      <button tuiButton type="button" [disabled]="actionLoading()" (click)="submitDialog()">
+        @if (actionLoading()) {
+          <tui-loader size="s" [inheritColor]="true" aria-label="Saving context action" />
+        }
+        Confirm
+      </button>
+    </div>
+  </div>
+</ng-template>

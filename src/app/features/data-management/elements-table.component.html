@@ -1,0 +1,195 @@
+<section class="resource-panel">
+  <header class="resource-panel-header">
+    <div>
+      <h2>Available elements</h2>
+      <p>Elements for the selected application and stage.</p>
+    </div>
+
+    <div class="resource-toolbar">
+      @if (canShowRetiredTab()) {
+        <tui-segmented
+          size="s"
+          [activeItemIndex]="activeTabIndex()"
+          (activeItemIndexChange)="setTab($event)"
+        >
+          <button type="button">Active</button>
+          <button type="button">Retired</button>
+        </tui-segmented>
+      }
+
+      <div class="resource-toolbar-actions">
+        @if (canCreate()) {
+          <button tuiButton type="button" size="s" (click)="createElement.emit()">
+            <svg lucidePlus size="18"></svg>
+            Add element
+          </button>
+        }
+
+        <button
+          tuiButton
+          type="button"
+          size="s"
+          appearance="outline"
+          [disabled]="loading() || !hasSelectedContext()"
+          (click)="reload.emit()"
+        >
+          @if (loading()) {
+            <tui-loader size="s" [inheritColor]="true" aria-label="Reloading elements" />
+          } @else {
+            <svg lucideRefreshCw size="18"></svg>
+          }
+          Reload
+        </button>
+      </div>
+    </div>
+  </header>
+
+  @if (error()) {
+    <p tuiMessage appearance="negative">{{ error() }}</p>
+  }
+
+  <div class="resource-table-scroll">
+    <table class="resource-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Label</th>
+          <th>Type</th>
+          <th>Locator</th>
+          <th class="element-actions-column">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (element of visibleElements(); track element.id ?? $index) {
+          <tr>
+            <td>{{ element.id ?? '-' }}</td>
+            <td>{{ element.label ?? '-' }}</td>
+            <td>{{ element.type ?? '-' }}</td>
+            <td class="locator-cell">
+              @if (element.locatorType === 'CSS' || element.locatorType === 'XPATH') {
+                <span
+                  class="locator-icon-box"
+                  [title]="element.locatorString ?? 'No locator available'"
+                  [attr.aria-label]="element.locatorType + ' locator'"
+                >
+                  <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">{{
+                    locatorIcon(element.locatorType)
+                  }}</mat-icon>
+                </span>
+              } @else {
+                -
+              }
+            </td>
+            <td class="element-actions-column">
+              <div class="table-actions element-actions">
+                <button
+                  tuiIconButton
+                  type="button"
+                  size="xs"
+                  appearance="outline"
+                  (click)="viewElement.emit(element)"
+                  aria-label="View element"
+                  title="View element"
+                >
+                  <mat-icon aria-hidden="true" fontSet="material-symbols-outlined"
+                    >visibility</mat-icon
+                  >
+                </button>
+
+                @if (element.retired === true) {
+                  @if (element._links?.['restore']?.href) {
+                    <button
+                      tuiIconButton
+                      type="button"
+                      size="xs"
+                      appearance="positive"
+                      (click)="restoreElement.emit(element)"
+                      aria-label="Restore element"
+                      title="Restore element"
+                    >
+                      <mat-icon aria-hidden="true" fontSet="material-symbols-outlined"
+                        >restore_from_trash</mat-icon
+                      >
+                    </button>
+                  }
+                } @else if (element._links?.['update']?.href) {
+                  <button
+                    tuiIconButton
+                    type="button"
+                    size="xs"
+                    appearance="outline"
+                    (click)="editElement.emit(element)"
+                    aria-label="Edit element"
+                    title="Edit element"
+                  >
+                    <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">edit</mat-icon>
+                  </button>
+                }
+
+                @if (element.retired !== true && element._links?.['promote']?.href) {
+                  <button
+                    tuiIconButton
+                    type="button"
+                    size="xs"
+                    appearance="outline"
+                    (click)="promoteElement.emit(element)"
+                    aria-label="Promote element"
+                    title="Promote element"
+                  >
+                    <mat-icon aria-hidden="true" fontSet="material-symbols-outlined"
+                      >database_upload</mat-icon
+                    >
+                  </button>
+                }
+
+                @if (element.retired !== true && element._links?.['delete']?.href) {
+                  <button
+                    tuiIconButton
+                    type="button"
+                    size="xs"
+                    appearance="negative"
+                    [disabled]="deletingElementId() !== null"
+                    (click)="deleteElement.emit(element)"
+                    aria-label="Delete element"
+                    title="Delete element"
+                  >
+                    @if (deletingElementId() === element.id) {
+                      <tui-loader size="s" [inheritColor]="true" aria-label="Deleting element" />
+                    } @else {
+                      <mat-icon aria-hidden="true" fontSet="material-symbols-outlined"
+                        >delete</mat-icon
+                      >
+                    }
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="resource-empty-cell">
+              @if (!hasSelectedContext()) {
+                Select an application and stage to load elements.
+              } @else {
+                No {{ selectedTab() === 'retired' ? 'retired' : 'active' }} elements are available
+                for the selected context.
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (elements().length > rowsPerPage) {
+    <footer class="resource-pagination">
+      <tui-pagination
+        size="m"
+        [length]="pageCount()"
+        [index]="pageIndex()"
+        (indexChange)="pageIndex.set($event)"
+      />
+    </footer>
+  }
+</section>

@@ -1,0 +1,57 @@
+<section class="metrics-panel">
+  <div class="metrics-header">
+    <div>
+      <h1>Metrics</h1>
+      <p>
+        @if (selection(); as selected) {
+          Test plan {{ testPlan()?.label ?? '#' + selected.testPlanId }}
+        } @else {
+          Open a test plan from Data Management to inspect its run history.
+        }
+      </p>
+    </div>
+
+    <button
+      tuiButton
+      type="button"
+      appearance="outline"
+      [disabled]="loading() || !selection()"
+      (click)="reload()"
+    >
+      @if (loading()) {
+        <tui-loader size="s" [inheritColor]="true" aria-label="Reloading metrics" />
+      } @else {
+        <svg lucideRefreshCw size="18"></svg>
+      }
+      Reload
+    </button>
+  </div>
+
+  @if (!selection()) {
+    <div class="empty-state">
+      Select the chart button in a test plan row to open metrics for that plan.
+    </div>
+  } @else if (error()) {
+    <p class="metrics-error">{{ error() }}</p>
+  } @else if (history(); as metrics) {
+    <app-metrics-summary-panel [history]="metrics" />
+    <app-metrics-calendar-panel [runs]="metrics.items ?? []" />
+    <app-metrics-timeline-panel
+      [runs]="metrics.items ?? []"
+      [deployments]="deployments()"
+      [testPlanId]="selection()?.testPlanId ?? null"
+    />
+
+    <div class="details-grid">
+      <app-metrics-result-mix-panel [history]="metrics" />
+      <app-metrics-recent-runs-panel
+        [runs]="metrics.items ?? []"
+        (openDetails)="openTestRunDetails($event)"
+      />
+    </div>
+  } @else if (loading()) {
+    <div class="loading-state">
+      <tui-loader size="m" aria-label="Loading metrics" />
+    </div>
+  }
+</section>

@@ -1,0 +1,77 @@
+<ng-container>
+  @let currentNode = node();
+
+  <div
+    class="node-connector node-input connector-left"
+    fNodeInput
+    [fInputId]="currentNode.id + ':left:in'"
+  >
+    <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">add_link</mat-icon>
+  </div>
+  <div
+    class="node-connector node-output connector-right"
+    fNodeOutput
+    [fOutputId]="currentNode.id + ':right:out'"
+    [fOutputMultiple]="true"
+  >
+    <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">add_link</mat-icon>
+  </div>
+
+  <button
+    class="delete-node-button"
+    type="button"
+    fDragBlocker
+    (click)="deleteNode.emit(currentNode.id)"
+    aria-label="Delete action"
+  >
+    <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">delete</mat-icon>
+  </button>
+
+  @if (currentNode.parentGroupId) {
+    <button
+      class="remove-from-group-button"
+      type="button"
+      fDragBlocker
+      (click)="removeFromGroup()"
+      aria-label="Remove action from group"
+      title="Remove from group"
+    >
+      <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">output</mat-icon>
+    </button>
+  }
+
+  <div class="node-title">
+    <label>
+      <span>Action label</span>
+      <input
+        type="text"
+        fDragBlocker
+        [value]="currentNode.label"
+        placeholder="Name this action"
+        (input)="onNodeLabelChange($event)"
+      />
+    </label>
+  </div>
+  <div class="element-summary">
+    <span>{{ currentNode.elementLabel }}</span>
+    <strong>{{ currentNode.type }}</strong>
+    <button
+      class="locator-chip"
+      type="button"
+      fDragBlocker
+      [title]="currentNode.locatorString || 'No locator available'"
+      [attr.aria-label]="currentNode.locatorType + ' locator'"
+    >
+      <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">{{
+        nodeSummaryIcon(currentNode)
+      }}</mat-icon>
+    </button>
+  </div>
+
+  <app-test-plan-action-editor
+    [node]="currentNode"
+    [testDataSets]="testDataSets()"
+    [testDataLoading]="testDataLoading()"
+    [testDataError]="testDataError()"
+  />
+</ng-container>

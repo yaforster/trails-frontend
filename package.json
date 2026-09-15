@@ -1,0 +1,73 @@
+{
+  "name": "trails-frontend",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "generate:api": "node scripts/generate-api.mjs",
+    "write:runtime-config": "node scripts/write-runtime-config.mjs",
+    "prestart": "npm run write:runtime-config",
+    "prebuild": "npm run generate:api && npm run write:runtime-config",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "lint": "ng lint trails-frontend",
+    "test": "ng test"
+  },
+  "private": true,
+  "packageManager": "npm@10.9.2",
+  "dependencies": {
+    "@angular/animations": "^21.2.19",
+    "@angular/cdk": "^21.2.14",
+    "@angular/common": "^21.2.19",
+    "@angular/compiler": "^21.2.19",
+    "@angular/core": "^21.2.19",
+    "@angular/forms": "^21.2.19",
+    "@angular/material": "^21.2.14",
+    "@angular/platform-browser": "^21.2.19",
+    "@angular/router": "^21.2.19",
+    "@foblex/flow": "^18.6.1",
+    "@lucide/angular": "^1.16.0",
+    "@taiga-ui/addon-mobile": "^5.13.0",
+    "@taiga-ui/cdk": "^5.13.0",
+    "@taiga-ui/core": "^5.13.0",
+    "@taiga-ui/icons": "^5.13.0",
+    "@taiga-ui/kit": "^5.13.0",
+    "@taiga-ui/layout": "5.13.0",
+    "chart.js": "^4.5.1",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular-eslint/builder": "21.0.1",
+    "@angular-eslint/eslint-plugin": "21.0.1",
+    "@angular-eslint/eslint-plugin-template": "21.0.1",
+    "@angular/build": "^21.2.20",
+    "@angular/cli": "^21.2.20",
+    "@angular/compiler-cli": "^21.2.19",
+    "@asyncapi/modelina-cli": "^5.10.1",
+    "@angular-eslint/template-parser": "21.0.1",
+    "@eslint/js": "9.39.1",
+    "@hey-api/openapi-ts": "0.97.3",
+    "eslint": "9.39.1",
+    "jsdom": "^28.0.0",
+    "less": "^4.8.1",
+    "prettier": "^3.8.1",
+    "typescript": "~5.9.2",
+    "typescript-eslint": "8.67.0",
+    "vitest": "^4.0.8"
+  },
+  "overrides": {
+    "@angular/build": {
+      "undici": "7.29.0"
+    },
+    "@angular/cli": {
+      "@modelcontextprotocol/sdk": "1.30.0"
+    },
+    "@hey-api/openapi-ts": {
+      "@hey-api/json-schema-ref-parser": "1.4.1",
+      "@hey-api/shared": "0.4.5"
+    }
+  }
+}

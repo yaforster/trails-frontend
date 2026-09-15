@@ -1,0 +1,10 @@
+.angular
+.git
+.idea
+.vscode
+coverage
+dist
+node_modules
+npm-debug.log
+public/trails-frontend-config.js
+__screenshots__

@@ -1,0 +1,284 @@
+<app-elements-table
+  [elements]="displayedElements()"
+  [selectedTab]="elementsTab()"
+  [loading]="elementsLoading()"
+  [error]="elementsError()"
+  [deletingElementId]="deletingElementId()"
+  [canCreate]="!!elementCreateHref()"
+  [canShowRetiredTab]="canShowRetiredElementsTab()"
+  [hasSelectedContext]="
+    context.selectedApplicationId() !== null && context.selectedStageId() !== null
+  "
+  (selectedTabChange)="selectElementsTab($event)"
+  (reload)="reloadElements()"
+  (createElement)="openCreateElementDialog()"
+  (viewElement)="openViewElementDialog($event)"
+  (editElement)="openEditElementDialog($event)"
+  (restoreElement)="openRestoreElementDialog($event)"
+  (promoteElement)="openPromoteElementDialog($event)"
+  (deleteElement)="deleteElement($event)"
+/>
+
+<ng-template
+  [tuiDialog]="elementDialogOpen()"
+  (tuiDialogChange)="$event ? elementDialogOpen.set(true) : closeCreateElementDialog()"
+  [tuiDialogOptions]="{
+    label: elementDialogHeader(),
+    size: 'l',
+    dismissible: !elementCreateLoading(),
+  }"
+>
+  <div class="element-dialog-content">
+    <div class="scout-form-grid">
+      <label>
+        <span>Element type</span>
+        <select [ngModel]="elementType()" (ngModelChange)="elementType.set($event)">
+          @for (type of elementTypes; track type) {
+            <option [value]="type">{{ type }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Locator type</span>
+        <select [ngModel]="locatorType()" (ngModelChange)="locatorType.set($event)">
+          @for (type of locatorTypes; track type) {
+            <option [value]="type">{{ type }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <label>
+      <span>Label</span>
+      <input
+        type="text"
+        [ngModel]="elementLabel()"
+        (ngModelChange)="elementLabel.set($event)"
+        maxlength="120"
+      />
+    </label>
+
+    <label>
+      <span>Locator</span>
+      <textarea [ngModel]="locatorString()" (ngModelChange)="locatorString.set($event)"></textarea>
+    </label>
+
+    <label>
+      <span>Screenshot</span>
+      <input
+        type="file"
+        [accept]="screenshotAcceptTypes().join(',')"
+        (change)="onScreenshotSelected($event)"
+      />
+    </label>
+
+    @if (elementCreateError()) {
+      <p class="table-error">{{ elementCreateError() }}</p>
+    }
+
+    <div class="run-dialog-actions">
+      <button
+        tuiButton
+        type="button"
+        appearance="outline"
+        [disabled]="elementCreateLoading()"
+        (click)="closeCreateElementDialog()"
+      >
+        Cancel
+      </button>
+      <button tuiButton type="button" [disabled]="elementCreateLoading()" (click)="saveElement()">
+        @if (elementCreateLoading()) {
+          <tui-loader size="s" [inheritColor]="true" aria-label="Saving element" />
+        } @else {
+          <svg lucidePlus size="18"></svg>
+        }
+        {{ elementDialogSubmitLabel() }}
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template
+  [tuiDialog]="elementViewDialogOpen()"
+  (tuiDialogChange)="$event ? elementViewDialogOpen.set(true) : closeViewElementDialog()"
+  [tuiDialogOptions]="{
+    label: 'View element',
+    size: 'l',
+  }"
+>
+  <div class="element-dialog-content">
+    <div class="scout-form-grid">
+      <label>
+        <span>ID</span>
+        <input type="text" [ngModel]="viewedElementId()" disabled />
+      </label>
+
+      <label>
+        <span>Element type</span>
+        <input type="text" [ngModel]="viewedElementType()" disabled />
+      </label>
+
+      <label>
+        <span>Locator type</span>
+        <input type="text" [ngModel]="viewedElementLocatorType()" disabled />
+      </label>
+
+      <label>
+        <span>Label</span>
+        <input type="text" [ngModel]="viewedElementLabel()" disabled />
+      </label>
+    </div>
+
+    <label>
+      <span>Locator</span>
+      <textarea [ngModel]="viewedElementLocatorString()" disabled></textarea>
+    </label>
+
+    <div class="element-screenshot-section">
+      <span>Screenshot</span>
+      @if (viewScreenshotLoading()) {
+        <div class="element-screenshot-placeholder">
+          <tui-loader size="m" aria-label="Loading element screenshot" />
+        </div>
+      } @else if (viewScreenshotUrl()) {
+        <button
+          type="button"
+          class="element-screenshot-thumbnail"
+          (click)="openScreenshotOverlay()"
+          aria-label="Open screenshot in original size"
+          title="Open screenshot in original size"
+        >
+          <img [src]="viewScreenshotUrl()" alt="Element screenshot thumbnail" />
+        </button>
+      } @else if (viewScreenshotError()) {
+        <p class="table-error">{{ viewScreenshotError() }}</p>
+      } @else {
+        <div class="element-screenshot-placeholder">
+          No screenshot is available for this element.
+        </div>
+      }
+    </div>
+
+    <div class="run-dialog-actions">
+      <button tuiButton type="button" appearance="outline" (click)="closeViewElementDialog()">
+        Close
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template
+  [tuiDialog]="screenshotOverlayOpen()"
+  (tuiDialogChange)="$event ? screenshotOverlayOpen.set(true) : closeScreenshotOverlay()"
+  [tuiDialogOptions]="{
+    label: 'Element screenshot',
+    size: 'l',
+  }"
+>
+  @if (viewScreenshotUrl()) {
+    <div class="screenshot-overlay-content">
+      <img [src]="viewScreenshotUrl()" alt="Element screenshot in original size" />
+    </div>
+  }
+</ng-template>
+
+<ng-template
+  [tuiDialog]="promoteDialogOpen()"
+  (tuiDialogChange)="$event ? promoteDialogOpen.set(true) : closePromoteDialog()"
+  [tuiDialogOptions]="{
+    label: 'Promote element',
+    size: 'm',
+    dismissible: !promoteLoading(),
+  }"
+>
+  <div class="promote-dialog-content">
+    <p>Promote element "{{ promoteTarget()?.label }}" to another stage in the same application.</p>
+
+    <label>
+      <span>Target stage</span>
+      <select
+        [ngModel]="promoteTargetStageId()"
+        (ngModelChange)="updatePromoteTargetStageId($event)"
+      >
+        <option [ngValue]="null">Select a stage</option>
+        @for (stage of promoteTargetStages(); track stage.id) {
+          <option [ngValue]="stage.id">{{ stage.label ?? 'Stage ' + stage.id }}</option>
+        }
+      </select>
+    </label>
+
+    @if (promoteTargetStages().length === 0) {
+      <p class="table-error">There is no other active stage available for this application.</p>
+    }
+
+    @if (promoteReadyToConfirm()) {
+      <p class="run-confirmation">
+        Review the target stage "{{ promoteTargetStage()?.label }}", then confirm promotion.
+      </p>
+    }
+
+    @if (promoteError()) {
+      <p class="table-error">{{ promoteError() }}</p>
+    }
+
+    <div class="run-dialog-actions">
+      <button
+        tuiButton
+        type="button"
+        appearance="outline"
+        [disabled]="promoteLoading()"
+        (click)="closePromoteDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        tuiButton
+        type="button"
+        [disabled]="promoteLoading() || promoteTargetStages().length === 0"
+        (click)="submitPromoteDialog()"
+      >
+        @if (promoteLoading()) {
+          <tui-loader size="s" [inheritColor]="true" aria-label="Promoting element" />
+        }
+        {{ promoteReadyToConfirm() ? 'Confirm promotion' : 'Review promotion' }}
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template
+  [tuiDialog]="restoreDialogOpen()"
+  (tuiDialogChange)="$event ? restoreDialogOpen.set(true) : closeRestoreDialog()"
+  [tuiDialogOptions]="{
+    label: 'Restore element',
+    size: 'm',
+    dismissible: !restoreLoading(),
+  }"
+>
+  <div class="restore-dialog-content">
+    <p>Restore element "{{ restoreTarget()?.label }}"?</p>
+
+    @if (restoreError()) {
+      <p class="table-error">{{ restoreError() }}</p>
+    }
+
+    <div class="run-dialog-actions">
+      <button
+        tuiButton
+        type="button"
+        appearance="outline"
+        [disabled]="restoreLoading()"
+        (click)="closeRestoreDialog()"
+      >
+        Cancel
+      </button>
+      <button tuiButton type="button" [disabled]="restoreLoading()" (click)="submitRestoreDialog()">
+        @if (restoreLoading()) {
+          <tui-loader size="s" [inheritColor]="true" aria-label="Restoring element" />
+        }
+        Confirm restore
+      </button>
+    </div>
+  </div>
+</ng-template>

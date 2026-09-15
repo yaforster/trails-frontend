@@ -1,0 +1,134 @@
+asyncapi: 3.0.0
+info:
+  title: Trails Test Execution Events
+  version: 1.0.0
+  description: AsyncAPI contract for test execution lifecycle events delivered via Server-Sent Events.
+
+channels:
+  test.execution.{executionId}:
+    address: /api/test/events/{executionId}
+    parameters:
+      executionId:
+        description: Correlation id of a submitted test execution request.
+    messages:
+      testExecutionStartedEvent:
+        $ref: '#/components/messages/TestExecutionStartedEventMessage'
+      testExecutionCompletedEvent:
+        $ref: '#/components/messages/TestExecutionCompletedEventMessage'
+      testExecutionFailedEvent:
+        $ref: '#/components/messages/TestExecutionFailedEventMessage'
+
+operations:
+  receiveTestExecutionStartedEvents:
+    action: receive
+    channel:
+      $ref: '#/channels/test.execution.{executionId}'
+    messages:
+      - $ref: '#/channels/test.execution.{executionId}/messages/testExecutionStartedEvent'
+
+  receiveTestExecutionCompletedEvents:
+    action: receive
+    channel:
+      $ref: '#/channels/test.execution.{executionId}'
+    messages:
+      - $ref: '#/channels/test.execution.{executionId}/messages/testExecutionCompletedEvent'
+
+  receiveTestExecutionFailedEvents:
+    action: receive
+    channel:
+      $ref: '#/channels/test.execution.{executionId}'
+    messages:
+      - $ref: '#/channels/test.execution.{executionId}/messages/testExecutionFailedEvent'
+
+components:
+  messages:
+    TestExecutionStartedEventMessage:
+      name: TestExecutionStartedEventMessage
+      title: Test execution started event
+      payload:
+        $ref: '#/components/schemas/TestExecutionStartedEvent'
+
+    TestExecutionCompletedEventMessage:
+      name: TestExecutionCompletedEventMessage
+      title: Test execution completed event
+      payload:
+        $ref: '#/components/schemas/TestExecutionCompletedEvent'
+
+    TestExecutionFailedEventMessage:
+      name: TestExecutionFailedEventMessage
+      title: Test execution failed event
+      payload:
+        $ref: '#/components/schemas/TestExecutionFailedEvent'
+
+  schemas:
+    TestExecutionStartedEvent:
+      type: object
+      properties:
+        executionId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - RUNNING
+        message:
+          type: string
+        links:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Link'
+
+    TestExecutionCompletedEvent:
+      type: object
+      properties:
+        executionId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - COMPLETED
+        message:
+          type: string
+        testRunId:
+          type: integer
+          format: int64
+        links:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Link'
+
+    TestExecutionFailedEvent:
+      type: object
+      properties:
+        executionId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - FAILED
+        message:
+          type: string
+        error:
+          $ref: '#/components/schemas/Error'
+        links:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Link'
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        stacktrace:
+          type: string
+        problematicElement:
+          type: string
+
+    Link:
+      type: object
+      properties:
+        href:
+          type: string

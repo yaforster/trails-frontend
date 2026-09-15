@@ -1,0 +1,22 @@
+services:
+  trails-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: trails-frontend:local
+    env_file:
+      - trails-frontend.env
+    environment:
+      TRAILS_API_BASE_URL: ${TRAILS_API_BASE_URL:-http://localhost:8080}
+      TRAILS_KEYCLOAK_TOKEN_URL: ${TRAILS_KEYCLOAK_TOKEN_URL:-http://localhost:8081/realms/master/protocol/openid-connect/token}
+    ports:
+      - '${TRAILS_FRONTEND_HOST_BIND:-127.0.0.1}:${TRAILS_FRONTEND_HOST_PORT:-4200}:80'
+    restart: unless-stopped
+    networks:
+      - default
+      - trails-public
+
+networks:
+  trails-public:
+    name: trails-public
+    external: true

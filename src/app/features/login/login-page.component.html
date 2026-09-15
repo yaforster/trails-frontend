@@ -1,0 +1,53 @@
+<section class="login-page">
+  <div class="login-card">
+    <header class="login-header">
+      <h1>Sign in to Trails</h1>
+      <p>Authenticate against the local Keycloak realm.</p>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="login()" class="login-form">
+      @if (error()) {
+        <p class="error-message">{{ error() }}</p>
+      }
+
+      <tui-textfield>
+        <label tuiLabel for="username">Username</label>
+        <input id="username" tuiInput type="text" autocomplete="off" formControlName="username" />
+      </tui-textfield>
+
+      <tui-textfield [tuiTextfieldCleaner]="false">
+        <label tuiLabel for="password">Password</label>
+        <input
+          id="password"
+          tuiInput
+          type="password"
+          autocomplete="current-password"
+          formControlName="password"
+        />
+      </tui-textfield>
+
+      <tui-textfield>
+        <label tuiLabel for="clientId">Client ID</label>
+        <input id="clientId" tuiInput type="text" autocomplete="off" formControlName="clientId" />
+      </tui-textfield>
+
+      <tui-textfield [tuiTextfieldCleaner]="false">
+        <label tuiLabel for="clientSecret">Client Secret</label>
+        <input
+          id="clientSecret"
+          tuiInput
+          type="password"
+          autocomplete="off"
+          formControlName="clientSecret"
+        />
+      </tui-textfield>
+
+      <button tuiButton type="submit" [disabled]="loading()" [loading]="loading()">
+        @if (!loading()) {
+          <svg lucideLogIn size="18"></svg>
+        }
+        Sign in
+      </button>
+    </form>
+  </div>
+</section>

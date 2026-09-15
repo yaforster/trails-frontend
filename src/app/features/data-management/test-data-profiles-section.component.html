@@ -1,0 +1,142 @@
+<app-test-data-profiles
+  [profiles]="displayedTestDataSets()"
+  [selectedTab]="testDataTab()"
+  [selectedProfile]="selectedTestDataSet()"
+  [selectedProfileId]="selectedTestDataSetId()"
+  [selectedEntries]="selectedTestDataEntries()"
+  [loading]="testDataLoading()"
+  [error]="testDataError()"
+  [deletingProfileId]="deletingTestDataId()"
+  [canCreate]="!!testDataCreateHref()"
+  [canShowRetiredTab]="canShowRetiredTestDataTab()"
+  (selectedTabChange)="selectTestDataTab($event)"
+  (reload)="reloadTestData()"
+  (createProfile)="openCreateTestDataDialog()"
+  (selectProfile)="selectTestDataSet($event)"
+  (editProfile)="openEditTestDataDialog($event)"
+  (restoreProfile)="openRestoreTestDataDialog($event)"
+  (deleteProfile)="deleteTestData($event)"
+/>
+
+<ng-template
+  [tuiDialog]="testDataDialogOpen()"
+  (tuiDialogChange)="$event ? testDataDialogOpen.set(true) : closeTestDataDialog()"
+  [tuiDialogOptions]="{
+    label: testDataDialogHeader(),
+    size: 'l',
+    dismissible: !testDataSaveLoading(),
+  }"
+>
+  <div class="test-data-dialog-content">
+    <label>
+      <span>Label</span>
+      <input
+        type="text"
+        [ngModel]="testDataLabel()"
+        (ngModelChange)="testDataLabel.set($event)"
+        maxlength="120"
+      />
+    </label>
+
+    <div class="test-data-edit-heading">
+      <span>Values</span>
+      <button tuiButton type="button" size="s" appearance="outline" (click)="addTestDataValue()">
+        <svg lucidePlus size="16"></svg>
+        Add value
+      </button>
+    </div>
+
+    <div class="test-data-entry-editor">
+      @for (entry of testDataValues(); track entry.draftId) {
+        <input
+          type="text"
+          [ngModel]="entry.key"
+          (ngModelChange)="updateTestDataValue(entry.draftId, 'key', $event)"
+          placeholder="Key"
+        />
+        <input
+          type="text"
+          [ngModel]="entry.value"
+          (ngModelChange)="updateTestDataValue(entry.draftId, 'value', $event)"
+          placeholder="Value"
+        />
+        <button
+          tuiIconButton
+          type="button"
+          size="xs"
+          appearance="negative"
+          class="icon-action-button"
+          (click)="removeTestDataValue(entry.draftId)"
+          aria-label="Remove test data value"
+          title="Remove test data value"
+        >
+          <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">delete</mat-icon>
+        </button>
+      }
+    </div>
+
+    @if (testDataValues().length === 0) {
+      <div class="empty-values-editor">No key-value pairs have been added.</div>
+    }
+
+    @if (testDataSaveError()) {
+      <p class="table-error">{{ testDataSaveError() }}</p>
+    }
+
+    <div class="run-dialog-actions">
+      <button
+        tuiButton
+        type="button"
+        appearance="outline"
+        [disabled]="testDataSaveLoading()"
+        (click)="closeTestDataDialog()"
+      >
+        Cancel
+      </button>
+      <button tuiButton type="button" [disabled]="testDataSaveLoading()" (click)="saveTestData()">
+        @if (testDataSaveLoading()) {
+          <tui-loader size="s" [inheritColor]="true" aria-label="Saving test data profile" />
+        } @else {
+          <svg lucidePlus size="18"></svg>
+        }
+        {{ testDataDialogSubmitLabel() }}
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template
+  [tuiDialog]="restoreDialogOpen()"
+  (tuiDialogChange)="$event ? restoreDialogOpen.set(true) : closeRestoreDialog()"
+  [tuiDialogOptions]="{
+    label: 'Restore test data profile',
+    size: 'm',
+    dismissible: !restoreLoading(),
+  }"
+>
+  <div class="restore-dialog-content">
+    <p>Restore test data profile "{{ restoreTarget()?.label }}"?</p>
+
+    @if (restoreError()) {
+      <p class="table-error">{{ restoreError() }}</p>
+    }
+
+    <div class="run-dialog-actions">
+      <button
+        tuiButton
+        type="button"
+        appearance="outline"
+        [disabled]="restoreLoading()"
+        (click)="closeRestoreDialog()"
+      >
+        Cancel
+      </button>
+      <button tuiButton type="button" [disabled]="restoreLoading()" (click)="submitRestoreDialog()">
+        @if (restoreLoading()) {
+          <tui-loader size="s" [inheritColor]="true" aria-label="Restoring test data profile" />
+        }
+        Confirm restore
+      </button>
+    </div>
+  </div>
+</ng-template>

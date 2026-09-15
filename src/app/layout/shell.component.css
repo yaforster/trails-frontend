@@ -1,0 +1,251 @@
+:host {
+  background: var(--app-shell-background-color);
+  box-sizing: border-box;
+  color: var(--trails-text);
+  display: flex;
+  flex-wrap: wrap;
+  height: 100dvh;
+  min-height: 100dvh;
+}
+
+:host:has(app-login-page) {
+  background-image: var(--app-shell-background-image);
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+header[tuiNavigationHeader] {
+  background: color-mix(in srgb, var(--trails-panel-bg) 94%, transparent);
+  border-bottom: 1px solid var(--trails-border);
+  flex: 0 0 100%;
+  position: relative;
+  z-index: 1;
+}
+
+header[tuiNavigationHeader] button[tuiIconButton] {
+  border-radius: 0.5rem;
+  color: var(--trails-text-muted);
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+header[tuiNavigationHeader] button[tuiIconButton]:hover {
+  background: var(--trails-selected-bg);
+  border-color: color-mix(in srgb, var(--trails-accent) 42%, var(--trails-border));
+  color: var(--trails-accent);
+}
+
+header[tuiNavigationHeader] button[tuiIconButton]:focus-visible,
+.side-nav a[tuiAsideItem]:focus-visible {
+  outline: 0.125rem solid var(--trails-accent);
+  outline-offset: 0.125rem;
+}
+
+.header-actions {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-inline-start: auto;
+}
+
+.navigation-spinner {
+  align-items: center;
+  display: inline-flex;
+  height: 2rem;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 180ms ease;
+  width: 2rem;
+}
+
+.navigation-spinner.visible {
+  opacity: 1;
+}
+
+.theme-button[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--trails-accent) 26%, transparent);
+  color: var(--trails-accent);
+}
+
+.header-control {
+  height: var(--trails-header-control-size);
+  min-height: var(--trails-header-control-size);
+  min-width: var(--trails-header-control-size);
+  width: var(--trails-header-control-size);
+}
+
+aside[tuiNavigationAside] {
+  align-self: stretch;
+  background: color-mix(in srgb, var(--trails-panel-bg) 96%, transparent);
+  border-inline-end: 1px solid var(--trails-border);
+  min-height: calc(100dvh - 3rem);
+  overflow: hidden;
+}
+
+.side-nav {
+  display: grid;
+  gap: 0.25rem;
+  overflow: hidden;
+  padding: 0.75rem 0.5rem;
+}
+
+.side-nav a[tuiAsideItem] {
+  align-items: center;
+  border-radius: 0.5rem;
+  color: var(--trails-text-muted);
+  display: flex;
+  gap: 0.75rem;
+  min-height: var(--trails-nav-hit-target);
+  overflow: hidden;
+  padding-inline: 0.75rem;
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease;
+}
+
+.side-nav a[tuiAsideItem] > svg {
+  flex: 0 0 var(--trails-nav-icon-size);
+  height: var(--trails-nav-icon-size);
+  width: var(--trails-nav-icon-size);
+}
+
+.side-nav a[tuiAsideItem]:hover:not(.disabled) {
+  background: var(--trails-bg-muted);
+  color: var(--trails-text);
+}
+
+.side-nav a[tuiAsideItem]._active {
+  background: var(--trails-selected-bg);
+  box-shadow: inset 0.1875rem 0 0 var(--trails-accent);
+  color: var(--trails-accent);
+  font-weight: 600;
+}
+
+.navigation-collapsed .side-nav a[tuiAsideItem] {
+  gap: 0;
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.navigation-collapsed[tuiNavigationAside] {
+  inline-size: calc(var(--trails-nav-hit-target) + 1rem);
+}
+
+.navigation-collapsed[tuiNavigationAside] + main[tuiNavigationMain] {
+  max-inline-size: calc(100% - var(--trails-nav-hit-target) - 1rem);
+}
+
+.navigation-collapsed .side-nav {
+  padding-inline: 0;
+}
+
+.navigation-collapsed .side-nav-label {
+  flex-basis: 0;
+  inline-size: 0;
+  margin: 0;
+  max-inline-size: 0;
+  min-inline-size: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0;
+  visibility: hidden;
+  white-space: nowrap;
+}
+
+.side-nav .disabled {
+  opacity: 0.45;
+}
+
+.content[tuiNavigationMain] {
+  align-items: stretch;
+  block-size: calc(100dvh - 3rem);
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0;
+  min-width: 0;
+  padding-bottom: 1.5rem;
+}
+
+.workspace-card {
+  background: color-mix(in srgb, var(--trails-panel-bg) 94%, transparent);
+  border: 1px solid var(--trails-border);
+  border-radius: 0.75rem;
+  box-sizing: border-box;
+  box-shadow: var(--trails-shadow-subtle);
+  inline-size: 100%;
+  padding: 0.75rem 1rem;
+}
+
+.page-content {
+  display: flex;
+  flex: 1 1 auto;
+  inline-size: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+}
+
+.page-content > router-outlet ~ * {
+  flex: 1 1 auto;
+  inline-size: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.page-content:has(app-test-result-details-page) {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.page-content:has(app-test-plan-modeller-page) {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  aside[tuiNavigationAside] {
+    inline-size: calc(var(--trails-nav-hit-target) + 1rem) !important;
+    overflow: hidden;
+  }
+
+  aside[tuiNavigationAside] + main[tuiNavigationMain] {
+    max-inline-size: calc(100% - var(--trails-nav-hit-target) - 1rem) !important;
+  }
+
+  .side-nav {
+    padding-inline: 0;
+  }
+
+  .side-nav a[tuiAsideItem] {
+    gap: 0;
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .side-nav-label {
+    flex-basis: 0;
+    inline-size: 0;
+    margin: 0;
+    max-inline-size: 0;
+    min-inline-size: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0;
+    visibility: hidden;
+    white-space: nowrap;
+  }
+
+  .workspace-card {
+    padding: 0.75rem;
+  }
+}

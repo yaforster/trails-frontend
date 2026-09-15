@@ -1,0 +1,56 @@
+<section
+  #modellerShell
+  class="modeller-shell"
+  [class.modeller-theme-dark]="modellerDark()"
+  [class.modeller-theme-light]="!modellerDark()"
+  aria-label="Test plan modeller"
+>
+  <app-test-plan-modeller-canvas
+    [testDataSets]="testDataSets()"
+    [testDataLoading]="testDataLoading()"
+    [testDataError]="testDataError()"
+    [createLoading]="createTestPlanLoading()"
+    [canCreate]="
+      !!context.selectedApplicationId() &&
+      !!context.selectedStageId() &&
+      auth.authenticated() &&
+      graph.canSaveTestPlanDefinition()
+    "
+    [validationWarning]="graph.testPlanDefinitionValidationError()"
+    [message]="createTestPlanMessage()"
+    [error]="createTestPlanError()"
+    [modellerDark]="modellerDark()"
+    [fullscreen]="modellerFullscreen()"
+    (createPlan)="openCreateTestPlanDialog($event)"
+    (previewDefinition)="openDefinitionPreview()"
+    (toggleModellerTheme)="toggleModellerTheme()"
+    (toggleFullscreen)="toggleFullscreen()"
+  />
+  <app-test-plan-modeller-palette-sidebar
+    [utilityItems]="utilityPaletteItems()"
+    [elementItems]="elementPaletteItems()"
+    [loading]="elementsLoading()"
+    [error]="elementsError()"
+    (reload)="reloadElements()"
+  />
+
+  <app-test-plan-definition-preview-dialog
+    [open]="definitionPreviewOpen()"
+    [definitionJson]="definitionPreviewJson()"
+    [downloadFileName]="definitionPreviewFileName()"
+    [importError]="definitionPreviewImportError()"
+    (close)="closeDefinitionPreview()"
+    (draftChange)="clearDefinitionPreviewImportError()"
+    (importDefinition)="importDefinitionJson($event)"
+  />
+  <app-create-test-plan-dialog
+    [open]="createTestPlanDialogOpen()"
+    [loading]="createTestPlanLoading()"
+    [name]="createTestPlanName()"
+    [error]="createTestPlanError()"
+    (openChange)="createTestPlanDialogOpen.set($event)"
+    (nameChange)="createTestPlanName.set($event)"
+    (close)="closeCreateTestPlanDialog()"
+    (create)="createTestPlan()"
+  />
+</section>

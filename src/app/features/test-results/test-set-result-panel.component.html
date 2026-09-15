@@ -1,0 +1,40 @@
+﻿<article class="result-panel test-set-panel">
+  <h2>Test Set Result</h2>
+
+  <div class="field-grid">
+    <div class="field-box">
+      <span>Test Set ID</span>
+      <strong>{{ testSet().result.id ?? '-' }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Executed In Browser</span>
+      <strong>{{ testSetBrowser(testSet().result) }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Total Run Time</span>
+      <strong>{{ runtimeLabel(testSet().result.totalRunTime) }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Test Plan Label</span>
+      <strong>{{ testSet().result.testPlanLabel ?? fallbackTestPlanLabel() ?? '-' }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Started At</span>
+      <strong>{{
+        testSet().result.testCaseResult?.timestamp
+          ? (testSet().result.testCaseResult?.timestamp | date: 'dd.MM.yyyy HH:mm:ss')
+          : '-'
+      }}</strong>
+    </div>
+    <div class="field-box">
+      <span>Path Results</span>
+      <strong>{{ testSet().paths.length }}</strong>
+    </div>
+  </div>
+
+  @for (path of testSet().paths; track path.result.id ?? $index) {
+    <app-test-path-result-panel [path]="path" [testSetId]="testSet().result.id" />
+  } @empty {
+    <p class="empty-state">No path results are available for this browser execution.</p>
+  }
+</article>

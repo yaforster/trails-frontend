@@ -1,0 +1,178 @@
+<section class="table-panel">
+  <div class="table-header">
+    <div>
+      <h1>Test results</h1>
+      <p>Test plan run results for the selected application and stage.</p>
+    </div>
+
+    <div class="table-header-actions">
+      <label class="id-search-field">
+        <span>Search ID</span>
+        <input
+          type="search"
+          inputmode="numeric"
+          placeholder="ID"
+          [value]="testRunIdSearch()"
+          [disabled]="
+            testRunsLoading() || !context.selectedApplicationId() || !context.selectedStageId()
+          "
+          (input)="updateTestRunIdSearch($event)"
+        />
+      </label>
+
+      <button
+        tuiButton
+        type="button"
+        appearance="outline"
+        [disabled]="
+          testRunsLoading() || !context.selectedApplicationId() || !context.selectedStageId()
+        "
+        (click)="reloadTestRuns()"
+      >
+        @if (testRunsLoading()) {
+          <tui-loader size="s" [inheritColor]="true" aria-label="Reloading test results" />
+        } @else {
+          <svg lucideRefreshCw size="18"></svg>
+        }
+        Reload
+      </button>
+    </div>
+  </div>
+
+  @if (testRunsError()) {
+    <p class="table-error">{{ testRunsError() }}</p>
+  }
+
+  <div class="result-table-scroll">
+    <table class="result-table">
+      <thead>
+        <tr>
+          <th>
+            <button
+              type="button"
+              class="sort-button"
+              [attr.aria-sort]="sortIndicator('id') || null"
+              (click)="updateSort('id')"
+            >
+              ID
+            </button>
+          </th>
+          <th>
+            <button
+              type="button"
+              class="sort-button"
+              [attr.aria-sort]="sortIndicator('label') || null"
+              (click)="updateSort('label')"
+            >
+              Label
+            </button>
+          </th>
+          <th>
+            <button
+              type="button"
+              class="sort-button"
+              [attr.aria-sort]="sortIndicator('indicator') || null"
+              (click)="updateSort('indicator')"
+            >
+              Result
+            </button>
+          </th>
+          <th>
+            <button
+              type="button"
+              class="sort-button"
+              [attr.aria-sort]="sortIndicator('timestamp') || null"
+              (click)="updateSort('timestamp')"
+            >
+              Timestamp
+            </button>
+          </th>
+          <th>
+            <button
+              type="button"
+              class="sort-button"
+              [attr.aria-sort]="sortIndicator('applicationId') || null"
+              (click)="updateSort('applicationId')"
+            >
+              Application
+            </button>
+          </th>
+          <th>
+            <button
+              type="button"
+              class="sort-button"
+              [attr.aria-sort]="sortIndicator('stageId') || null"
+              (click)="updateSort('stageId')"
+            >
+              Stage
+            </button>
+          </th>
+          <th class="actions-column">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (testRun of visibleTestRuns(); track testRun.id ?? $index) {
+          <tr>
+            <td>{{ testRun.id ?? '-' }}</td>
+            <td>{{ testRun.label ?? '-' }}</td>
+            <td>
+              @if (testRun.indicator) {
+                <span
+                  class="result-badge"
+                  [class.result-success]="testRun.indicator === 'SUCCESS'"
+                  [class.result-partial]="testRun.indicator === 'PARTIAL_SUCCESS'"
+                  [class.result-failure]="testRun.indicator === 'FAILURE'"
+                >
+                  {{ resultLabel(testRun.indicator) }}
+                </span>
+              } @else {
+                -
+              }
+            </td>
+            <td>
+              {{ testRun.timestamp ? (testRun.timestamp | date: 'dd.MM.yyyy HH:mm:ss') : '-' }}
+            </td>
+            <td>{{ testRun.applicationId ?? '-' }}</td>
+            <td>{{ testRun.stageId ?? '-' }}</td>
+            <td class="actions-column">
+              <button
+                tuiIconButton
+                type="button"
+                size="xs"
+                appearance="outline"
+                class="inspect-result-button"
+                [disabled]="!canInspect(testRun)"
+                (click)="inspectTestRun(testRun)"
+                aria-label="Inspect test result"
+              >
+                <svg lucideEye size="16"></svg>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="empty-table-cell">
+              @if (!context.selectedApplicationId() || !context.selectedStageId()) {
+                Select an application and stage to load test results.
+              } @else {
+                No test results are available for the selected context.
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (sortedTestRuns().length > rowsPerPage) {
+    <footer class="result-pagination">
+      <tui-pagination
+        size="m"
+        [length]="pageCount()"
+        [index]="testRunsPageIndex()"
+        (indexChange)="testRunsPageIndex.set($event)"
+      />
+    </footer>
+  }
+</section>

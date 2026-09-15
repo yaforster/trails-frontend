@@ -1,0 +1,204 @@
+<div
+  class="profile-menu-wrapper"
+  tabindex="-1"
+  (click)="$event.stopPropagation()"
+  (keydown)="$event.stopPropagation()"
+>
+  <button
+    tuiIconButton
+    class="profile-button header-control"
+    type="button"
+    size="s"
+    appearance="outline"
+    aria-label="User profile"
+    aria-haspopup="dialog"
+    aria-controls="profile-menu"
+    [attr.aria-expanded]="menuOpen()"
+    [class.has-avatar]="!!avatarUrl()"
+    (click)="toggleMenu()"
+  >
+    @if (avatarUrl(); as currentAvatarUrl) {
+      <img class="profile-button-avatar" [src]="currentAvatarUrl" alt="" />
+    } @else {
+      <svg lucideUser size="20"></svg>
+    }
+  </button>
+
+  @if (menuOpen()) {
+    <section id="profile-menu" class="profile-menu" role="dialog" aria-label="User profile details">
+      <div class="profile-menu-header">
+        <div class="profile-avatar">
+          @if (avatarUrl(); as currentAvatarUrl) {
+            <img [src]="currentAvatarUrl" [alt]="displayName()" />
+          } @else {
+            <span>{{ initials() }}</span>
+          }
+
+          <input
+            #avatarInput
+            class="avatar-file-input"
+            type="file"
+            [accept]="avatarAcceptTypes().join(',')"
+            (change)="onAvatarSelected($event)"
+          />
+
+          <div class="avatar-actions" aria-label="Profile picture actions">
+            <button
+              class="avatar-action-button"
+              type="button"
+              aria-label="Upload profile picture"
+              title="Upload profile picture"
+              [disabled]="avatarSaving()"
+              (click)="openAvatarFilePicker(avatarInput)"
+            >
+              @if (avatarSaving()) {
+                <tui-loader size="s" [inheritColor]="true" />
+              } @else {
+                <svg lucidePencil size="14"></svg>
+              }
+            </button>
+
+            @if (avatarUrl()) {
+              <button
+                class="avatar-action-button danger"
+                type="button"
+                aria-label="Delete profile picture"
+                title="Delete profile picture"
+                [disabled]="avatarSaving()"
+                (click)="deleteAvatar()"
+              >
+                <svg lucideTrash2 size="14"></svg>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="profile-identity">
+          <strong>{{ displayName() }}</strong>
+          @if (profile()?.email) {
+            <span>{{ profile()?.email }}</span>
+          }
+        </div>
+      </div>
+
+      @if (profile(); as currentProfile) {
+        @if (editing()) {
+          <form class="profile-form" [formGroup]="form" (ngSubmit)="saveProfile()">
+            <label>
+              <span>First name</span>
+              <input
+                type="text"
+                formControlName="firstName"
+                autocomplete="given-name"
+                maxlength="100"
+              />
+            </label>
+
+            <label>
+              <span>Last name</span>
+              <input
+                type="text"
+                formControlName="lastName"
+                autocomplete="family-name"
+                maxlength="100"
+              />
+            </label>
+
+            <label class="wide-profile-field">
+              <span>Email</span>
+              <input type="email" formControlName="email" autocomplete="email" maxlength="255" />
+            </label>
+
+            @if (form.controls.email.invalid && form.controls.email.touched) {
+              <p class="field-error wide-profile-field">Enter a valid email address.</p>
+            }
+
+            <label class="wide-profile-field">
+              <span>Phone</span>
+              <input type="tel" formControlName="phoneNumber" autocomplete="tel" maxlength="50" />
+            </label>
+
+            @if (editError()) {
+              <p class="profile-error wide-profile-field">{{ editError() }}</p>
+            }
+
+            <div class="profile-form-actions wide-profile-field">
+              <button
+                class="secondary-icon-button"
+                type="button"
+                aria-label="Cancel profile edit"
+                [disabled]="saving()"
+                (click)="cancelEditing()"
+              >
+                <svg lucideX size="16"></svg>
+                <span>Cancel</span>
+              </button>
+              <button
+                class="primary-icon-button"
+                type="submit"
+                aria-label="Save profile"
+                [disabled]="saving() || form.invalid"
+              >
+                @if (saving()) {
+                  <tui-loader size="s" [inheritColor]="true" />
+                } @else {
+                  <svg lucideCheck size="16"></svg>
+                }
+                <span>Save</span>
+              </button>
+            </div>
+          </form>
+        } @else {
+          <dl class="profile-fields">
+            <div>
+              <dt>First name</dt>
+              <dd>{{ currentProfile.firstName || '-' }}</dd>
+            </div>
+            <div>
+              <dt>Last name</dt>
+              <dd>{{ currentProfile.lastName || '-' }}</dd>
+            </div>
+            <div>
+              <dt>Email</dt>
+              <dd>{{ currentProfile.email || '-' }}</dd>
+            </div>
+            <div>
+              <dt>Phone</dt>
+              <dd>{{ currentProfile.phoneNumber || '-' }}</dd>
+            </div>
+            <div class="wide-profile-field">
+              <dt>User ID</dt>
+              <dd>{{ currentProfile.userId }}</dd>
+            </div>
+          </dl>
+        }
+      } @else if (loading()) {
+        <div class="profile-loading" aria-live="polite">
+          <tui-loader size="m" />
+        </div>
+      } @else if (error()) {
+        <p class="profile-error">{{ error() }}</p>
+      }
+
+      <div class="profile-form-actions">
+        @if (profile(); as currentProfile) {
+          @if (!editing()) {
+            <button
+              class="secondary-icon-button"
+              type="button"
+              aria-label="Edit profile"
+              (click)="startEditing(currentProfile)"
+            >
+              <svg lucidePencil size="16"></svg>
+              <span>Edit</span>
+            </button>
+          }
+        }
+        <button class="secondary-icon-button" type="button" aria-label="Logout" (click)="logout()">
+          <svg lucideLogOut size="16"></svg>
+          <span>Logout</span>
+        </button>
+      </div>
+    </section>
+  }
+</div>

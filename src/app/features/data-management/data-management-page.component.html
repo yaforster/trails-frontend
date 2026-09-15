@@ -1,0 +1,34 @@
+<div class="data-management-page">
+  <header>
+    <div>
+      <h1>Data management</h1>
+      <p>
+        Maintain elements, reusable test data, deployments, and test plans for selected context.
+      </p>
+    </div>
+  </header>
+
+  <fieldset class="data-management-section-picker">
+    <legend>Data management section</legend>
+
+    <div class="data-management-section-scroll">
+      <tui-segmented
+        size="m"
+        [activeItemIndex]="selectedSectionIndex()"
+        (activeItemIndexChange)="selectSectionByIndex($event)"
+      >
+        @for (section of sections; track section.id) {
+          <button type="button">{{ section.label }}</button>
+        }
+      </tui-segmented>
+    </div>
+  </fieldset>
+
+  <app-test-plans-section [hidden]="!isSelectedSection('test-plans')" />
+
+  <app-elements-section [hidden]="!isSelectedSection('elements')" />
+
+  <app-test-data-profiles-section [hidden]="!isSelectedSection('test-data')" />
+
+  <app-deployment-report-section [hidden]="!isSelectedSection('deployments')" />
+</div>

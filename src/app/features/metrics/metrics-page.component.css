@@ -378,7 +378,7 @@ dt {
   align-items: center;
   background: var(--m-soft);
   border: 1px solid var(--m-border);
-  border-radius: 0.375rem;
+  border-radius: var(--trails-control-radius);
   color: var(--m-text);
   cursor: pointer;
   display: inline-flex;

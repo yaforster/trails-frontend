@@ -104,7 +104,7 @@
   align-items: center;
   background: var(--trails-surface-on-dark);
   border: 1px solid var(--trails-surface-on-dark-border);
-  border-radius: 999px;
+  border-radius: var(--trails-control-radius);
   color: var(--trails-text);
   cursor: pointer;
   display: inline-flex;
@@ -217,7 +217,7 @@
 .secondary-icon-button {
   align-items: center;
   border: 1px solid var(--trails-border);
-  border-radius: 0.375rem;
+  border-radius: var(--trails-control-radius);
   cursor: pointer;
   display: inline-flex;
   font: inherit;

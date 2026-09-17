@@ -420,7 +420,6 @@ app-test-plans-table {
   align-items: center;
   background: var(--trails-panel-bg);
   border: 1px solid var(--trails-border);
-  border-radius: 0.5rem;
   color: var(--trails-text);
   cursor: pointer;
   display: flex;

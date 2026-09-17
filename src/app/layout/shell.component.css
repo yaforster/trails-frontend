@@ -16,7 +16,9 @@
 }
 
 header[tuiNavigationHeader] {
-  background: color-mix(in srgb, var(--trails-panel-bg) 94%, transparent);
+  --tui-theme-color: var(--trails-nav-bg);
+
+  background: var(--trails-nav-bg);
   border-bottom: 1px solid var(--trails-border);
   flex: 0 0 100%;
   position: relative;
@@ -24,7 +26,9 @@ header[tuiNavigationHeader] {
 }
 
 header[tuiNavigationHeader] button[tuiIconButton] {
-  border-radius: 0.5rem;
+  background: var(--trails-nav-control-bg);
+  border: 1px solid var(--trails-border);
+  border-radius: var(--trails-control-radius);
   color: var(--trails-text-muted);
   transition:
     background-color 160ms ease,
@@ -67,6 +71,7 @@ header[tuiNavigationHeader] button[tuiIconButton]:focus-visible,
 
 .theme-button[aria-pressed='true'] {
   background: color-mix(in srgb, var(--trails-accent) 26%, transparent);
+  border-color: color-mix(in srgb, var(--trails-accent) 42%, var(--trails-border));
   color: var(--trails-accent);
 }
 
@@ -79,7 +84,9 @@ header[tuiNavigationHeader] button[tuiIconButton]:focus-visible,
 
 aside[tuiNavigationAside] {
   align-self: stretch;
-  background: color-mix(in srgb, var(--trails-panel-bg) 96%, transparent);
+  --tui-theme-color: var(--trails-nav-bg);
+
+  background: var(--trails-nav-bg);
   border-inline-end: 1px solid var(--trails-border);
   min-height: calc(100dvh - 3rem);
   overflow: hidden;
@@ -94,7 +101,7 @@ aside[tuiNavigationAside] {
 
 .side-nav a[tuiAsideItem] {
   align-items: center;
-  border-radius: 0.5rem;
+  border-radius: var(--trails-control-radius);
   color: var(--trails-text-muted);
   display: flex;
   gap: 0.75rem;
@@ -114,7 +121,7 @@ aside[tuiNavigationAside] {
 }
 
 .side-nav a[tuiAsideItem]:hover:not(.disabled) {
-  background: var(--trails-bg-muted);
+  background: var(--trails-nav-control-bg);
   color: var(--trails-text);
 }
 

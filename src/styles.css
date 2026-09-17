@@ -38,21 +38,32 @@
   --trails-chart-grid: #e2e8f0;
   --trails-chart-text: #64748b;
   --trails-chart-line: #94a3b8;
+  --trails-control-radius: 0.5rem;
+  --trails-nav-bg: color-mix(in srgb, var(--trails-bg-muted) 86%, var(--trails-panel-bg));
+  --trails-nav-control-bg: var(--trails-panel-bg);
 
   font-family: 'Inter', sans-serif;
 }
 
 body[tuiTheme='dark'] {
+  --tui-background-base: #18181b;
+  --tui-background-neutral-1: #27272a;
+  --tui-background-elevation-1: #303036;
+  --tui-background-elevation-2: #38383e;
+  --tui-background-elevation-3: #46464d;
+  --tui-border-normal: #52525b;
   --trails-accent: var(--tui-background-accent-1, #10b981);
-  --trails-bg: var(--tui-background-base, #09090b);
-  --trails-bg-muted: var(--tui-background-neutral-1, #18181b);
-  --trails-border: var(--tui-border-normal, #3f3f46);
+  --trails-bg: var(--tui-background-base, #18181b);
+  --trails-bg-muted: var(--tui-background-neutral-1, #27272a);
+  --trails-border: var(--tui-border-normal, #52525b);
   --trails-danger-bg: color-mix(in srgb, #ef4444 18%, var(--trails-bg-muted));
   --trails-danger-border: color-mix(in srgb, #ef4444 48%, var(--trails-border));
   --trails-danger-text: #fca5a5;
   --trails-icon-button-size: 2rem;
   --trails-icon-size: 1.125rem;
-  --trails-panel-bg: var(--tui-background-elevation-1, #18181b);
+  --trails-panel-bg: var(--tui-background-elevation-1, #303036);
+  --trails-nav-bg: #27272a;
+  --trails-nav-control-bg: #303036;
   --trails-selected-bg: color-mix(in srgb, var(--trails-accent) 18%, var(--trails-panel-bg));
   --trails-text: var(--tui-text-primary, #fafafa);
   --trails-text-muted: var(--tui-text-secondary, #a1a1aa);
@@ -93,8 +104,14 @@ textarea {
 }
 
 button {
+  border-radius: var(--trails-control-radius);
   overflow: hidden;
   position: relative;
+}
+
+button[tuiButton],
+button[tuiIconButton] {
+  --t-radius: var(--trails-control-radius);
 }
 
 button[tuiIconButton] > :is(mat-icon, svg),
@@ -363,7 +380,7 @@ app-test-plan-modeller-page .action-group-header {
 app-test-plan-modeller-page .action-group-label {
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 0.375rem;
+  border-radius: var(--trails-control-radius);
   color: var(--trails-text);
   font: inherit;
   font-size: 0.875rem;
@@ -385,7 +402,7 @@ app-test-plan-modeller-page .group-delete-button {
   align-items: center;
   background: var(--trails-surface);
   border: 1px solid var(--trails-border);
-  border-radius: 50%;
+  border-radius: var(--trails-control-radius);
   color: var(--trails-text-muted);
   cursor: pointer;
   display: inline-flex;
@@ -514,7 +531,7 @@ app-test-plan-modeller-page .canvas-tool-button {
   align-items: center;
   background: #f8fafc;
   border: 1px solid #cbd5e1;
-  border-radius: 0.375rem;
+  border-radius: var(--trails-control-radius);
   color: #334155;
   cursor: pointer;
   display: inline-flex;
@@ -759,7 +776,7 @@ app-test-plan-modeller-page {
 
 html.app-dark app-test-plan-modeller-page,
 .app-dark app-test-plan-modeller-page {
-  --modeller-canvas-background: #111827;
+  --modeller-canvas-background: var(--trails-bg-muted);
   --modeller-canvas-grid-color: rgba(52, 211, 153, 0.05);
   --modeller-canvas-dot-color: rgba(52, 211, 153, 0.05);
   --modeller-canvas-shadow:
@@ -785,8 +802,8 @@ html.app-dark app-test-plan-modeller-page,
 
 html.app-dark app-test-plan-modeller-page f-flow,
 .app-dark app-test-plan-modeller-page f-flow {
-  --ff-canvas-background-color: #111827;
-  --ff-flow-background-color: #111827;
+  --ff-canvas-background-color: var(--modeller-canvas-background);
+  --ff-flow-background-color: var(--modeller-canvas-background);
   --ff-background-line-color: var(--modeller-canvas-grid-color);
   --ff-background-dot-color: var(--modeller-canvas-dot-color);
 
@@ -930,29 +947,29 @@ html.app-dark app-test-plan-modeller-page .element-node .action-editor input::pl
 }
 
 app-test-plan-modeller-page .modeller-shell.modeller-theme-dark {
-  --trails-bg: #111827;
-  --trails-bg-muted: #1f2937;
-  --trails-panel-bg: #111827;
-  --trails-border: #334155;
-  --trails-border-strong: #475569;
-  --trails-surface: #111827;
-  --trails-surface-subtle: #1f2937;
+  --trails-bg: #18181b;
+  --trails-bg-muted: #27272a;
+  --trails-panel-bg: #303036;
+  --trails-border: #52525b;
+  --trails-border-strong: #71717a;
+  --trails-surface: #303036;
+  --trails-surface-subtle: #27272a;
   --trails-text: #f8fafc;
   --trails-text-muted: #cbd5e1;
-  --modeller-canvas-background: #111827;
+  --modeller-canvas-background: #27272a;
   --modeller-canvas-grid-color: rgba(52, 211, 153, 0.05);
   --modeller-canvas-dot-color: rgba(52, 211, 153, 0.05);
   --modeller-canvas-shadow:
     inset 0 0 0 1px rgba(52, 211, 153, 0.16), inset 0 0 38px rgba(15, 23, 42, 0.52);
-  --modeller-control-background: #111827;
-  --modeller-control-border: #334155;
+  --modeller-control-background: #303036;
+  --modeller-control-border: #52525b;
   --modeller-control-color: #f8fafc;
   --modeller-control-color-scheme: dark;
   --modeller-control-placeholder: #cbd5e1;
-  --modeller-delete-background: color-mix(in srgb, #ef4444 18%, #1f2937);
-  --modeller-delete-border: color-mix(in srgb, #ef4444 48%, #334155);
+  --modeller-delete-background: color-mix(in srgb, #ef4444 18%, #27272a);
+  --modeller-delete-border: color-mix(in srgb, #ef4444 48%, #52525b);
   --modeller-delete-color: #fca5a5;
-  --modeller-delete-hover-background: color-mix(in srgb, #ef4444 28%, #1f2937);
+  --modeller-delete-hover-background: color-mix(in srgb, #ef4444 28%, #27272a);
   --modeller-delete-hover-border: #ef4444;
   --modeller-delete-hover-color: #fecaca;
 }
@@ -994,7 +1011,7 @@ app-test-plan-modeller-page .viewport-tool-button {
   align-items: center;
   background: transparent;
   border: 0;
-  border-radius: 0.3125rem;
+  border-radius: var(--trails-control-radius);
   color: var(--modeller-control-color, #18181b);
   cursor: pointer;
   display: inline-flex;
@@ -1043,7 +1060,7 @@ app-test-plan-modeller-page .remove-from-group-button {
   align-items: center;
   background: var(--modeller-control-background, #ffffff);
   border: 1px solid var(--modeller-control-border, #d4d4d8);
-  border-radius: 0.375rem;
+  border-radius: var(--trails-control-radius);
   color: var(--modeller-control-color, #18181b);
   cursor: pointer;
   display: inline-flex;
@@ -1134,7 +1151,7 @@ app-test-plan-modeller-page .definition-preview-dialog button {
   align-items: center;
   background: var(--trails-bg-muted);
   border: 1px solid var(--trails-border);
-  border-radius: 0.375rem;
+  border-radius: var(--trails-control-radius);
   color: var(--trails-text);
   cursor: pointer;
   display: inline-flex;

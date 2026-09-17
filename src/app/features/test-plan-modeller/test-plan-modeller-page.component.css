@@ -302,6 +302,7 @@ p {
 
 .action-select-trigger {
   cursor: pointer;
+  border-radius: var(--trails-control-radius);
   justify-content: space-between;
 }
 
@@ -330,7 +331,7 @@ p {
 .action-select-option {
   background: transparent;
   border: 0;
-  border-radius: 0.375rem;
+  border-radius: var(--trails-control-radius);
   color: #18181b;
   cursor: pointer;
   font: inherit;
@@ -348,7 +349,7 @@ p {
   align-items: center;
   background: var(--modeller-delete-background, #fef2f2);
   border: 1px solid var(--modeller-delete-border, #fecaca);
-  border-radius: 0.375rem;
+  border-radius: var(--trails-control-radius);
   color: var(--modeller-delete-color, #b91c1c);
   cursor: pointer;
   display: inline-flex;

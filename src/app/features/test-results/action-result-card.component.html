@@ -42,10 +42,6 @@
       <span>Message</span>
       <strong>{{ action().result.resultMessage ?? '-' }}</strong>
     </div>
-    <div class="field-box wide-field">
-      <span>Exception Message</span>
-      <strong>{{ action().result.exceptionMessageFromAction ?? '-' }}</strong>
-    </div>
   </div>
 
   @if (action().screenshotUrl) {

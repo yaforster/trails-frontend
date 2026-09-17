@@ -230,7 +230,6 @@ export type ActionResult = {
     label?: string;
     resultMessage?: string;
     resultType?: 'SUCCESS' | 'SKIPPED' | 'VALIDATION_FAILURE' | 'TECHNICAL_FAILURE';
-    exceptionMessageFromAction?: string;
     _links?: Links;
 };
 

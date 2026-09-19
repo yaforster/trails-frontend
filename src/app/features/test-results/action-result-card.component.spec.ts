@@ -10,9 +10,7 @@ describe('ActionResultCardComponent', () => {
     fixture.componentRef.setInput('action', {
       result: {
         resultType: 'TECHNICAL_FAILURE',
-        resultMessage: 'Could not resize viewport.',
-        exceptionMessageFromAction:
-          'Requested viewport: 800 x 600 CSS pixels. Last measured viewport: unavailable. Cause: Node rejected resize.',
+        resultMessage: 'Could not interact with the required web page element.',
       },
       screenshotBlob: null,
       screenshotUrl: null,
@@ -20,9 +18,10 @@ describe('ActionResultCardComponent', () => {
     fixture.detectChanges();
   });
 
-  it('renders viewport resize technical diagnostics', () => {
+  it('renders service-safe failure message', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(
-      'Requested viewport: 800 x 600 CSS pixels. Last measured viewport: unavailable. Cause: Node rejected resize.',
+      'Could not interact with the required web page element.',
     );
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Exception Message');
   });
 });

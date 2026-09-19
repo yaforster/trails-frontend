@@ -1845,8 +1845,6 @@ components:
         resultType:
           type: string
           enum: [SUCCESS, SKIPPED, VALIDATION_FAILURE, TECHNICAL_FAILURE]
-        exceptionMessageFromAction:
-          type: string
         _links:
           $ref: '#/components/schemas/Links'
 

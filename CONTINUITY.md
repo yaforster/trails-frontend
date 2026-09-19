@@ -149,6 +149,7 @@ bounded.
 
 ## [OUTCOMES]
 
+- 2026-09-19 [TOOL] Opening persisted test plans now retains `COORDINATE_CLICK` actions and predecessor edges in the modeller. Added focused mapper coverage for action-ID to reference-ID edge translation; targeted test, full 86-test suite, lint, touched-file Prettier, and production build/API generation pass. Rebuilt and recreated `trails-frontend` with `trails-edge/public-runtime.env.template`; local and public roots return HTTP 200, and its API and Keycloak runtime URLs target `https://trailstestplatform.org`. No commit or push.
 - 2026-09-05 [TOOL] Data Management section hosts now explicitly fill their routed shell width, and the shared page grid
   has one shrink-safe column. The shell sizes every activated routed host after `router-outlet`, preventing future shell
   flex changes from reintroducing intrinsic-width pages. Selection coverage cycles all four URL-backed sections (Test

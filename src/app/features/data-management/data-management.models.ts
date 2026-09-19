@@ -69,6 +69,7 @@ export const actionDetailsTypes: readonly ActionDetailsType[] = [
   'DOWNLOADED_FILE_CHECK',
   'DOWNLOADED_DOCUMENT_TEXT_CHECK',
   'VIEWPORT_MOVE',
+  'COORDINATE_CLICK',
   'RESIZE_VIEWPORT',
 ];
 

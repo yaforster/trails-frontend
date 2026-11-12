@@ -1,40 +1,50 @@
 # Trails frontend repository map
 
-## Ownership and entry points
+```text
+client/trails-frontend/
+|-- angular.json                                  Angular build configuration
+|-- package.json                                  Frontend scripts and dependencies
+|-- api/
+|   |-- hateoas.yaml                              REST contract source for client generation
+|   `-- asyncapi.yaml                              Event contract source for client generation
+|-- docker/
+|   `-- nginx/                                    Container web-server configuration
+|-- public/
+|   `-- trails-frontend-config.js                 Runtime API configuration
+|-- scripts/
+|   |-- generate-api.mjs                          Generates transport clients and models
+|   `-- write-runtime-config.mjs                  Writes runtime configuration
+|-- src/
+|   |-- main.ts                                   Standalone Angular bootstrap
+|   |-- styles.css                                Global Trails design tokens
+|   `-- app/
+|       |-- app.{ts,config.ts,routes.ts}          Root shell, providers, and routing
+|       |-- auth/                                 Capability-selected unrestricted/provider access, JWT roles, guard, profile
+|       |-- context/                              Selected workspace context
+|       |-- core/                                 API configuration, traversal, capabilities, notifications, theme
+|       |-- layout/                               Authenticated navigation and application shell
+|       |-- test-execution/                       Authenticated SSE execution lifecycle handling
+|       |-- features/
+|       |   |-- data-management/                 Operational resource tables and dialogs
+|       |   |-- login/                           Login feature
+|       |   |-- metrics/                         Route selection and chart-palette resolution
+|       |   |-- test-plan-modeller/              Canvas graph editing, validation, and persistence
+|       |   `-- test-results/                    Test-run rendering workflows
+|       `-- generated/
+|           |-- hateoas/                         Generated REST types and client
+|           `-- asyncapi/                         Generated event types and client
+|-- Dockerfile                                    Nginx frontend image
+|-- docker-compose.yml                            Local container composition
+|-- trails-frontend.env.template                  Runtime environment template
+|-- README.md                                     Operator and development guidance
+`-- REPOMAP.md                                    This map
+```
 
-| Area                   | Source of truth                                                                                                                                                                          | Responsibility                                                                                                                                                                                                                |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Bootstrap and routes   | `src/main.ts`, `src/app/app.ts`, `src/app/app.config.ts`, `src/app/app.routes.ts`                                                                                                        | Standalone Angular bootstrap, root Taiga shell, providers, and guarded lazy feature routing.                                                                                                                                  |
-| Application shell      | `src/app/layout`                                                                                                                                                                         | Authenticated navigation, theme toggle, and profile controls.                                                                                                                                                                 |
-| Core                   | `src/app/core`                                                                                                                                                                           | Runtime API configuration, generated HATEOAS client setup and traversal, capabilities, notifications, deployment types, and persisted application theme state.                                                                  |
-| Authentication         | `src/app/auth`                                                                                                                                                                           | Keycloak password and refresh-token authentication, JWT roles, route guard, and current-user profile.                                                                                                                         |
-| Workspace context      | `src/app/context`                                                                                                                                                                        | Selected workspace context and its panel.                                                                                                                                                                                     |
-| Data management        | `src/app/features/data-management`                                                                                                                                                       | Operational resource tables, dialogs, and test-plan loading.                                                                                                                                                                  |
-| Test-plan modeller     | `src/app/features/test-plan-modeller`                                                                                                                                                    | Canvas editing, action graph construction and validation, and test-plan persistence.                                                                                                                                          |
-| Results and metrics    | `src/app/features/test-results`, `src/app/features/metrics`                                                                                                                              | Test-run rendering and contextual metrics workflows. Metrics validates application/stage/test-plan route selection and owns chart-palette resolution from theme CSS tokens.                                                     |
-| Execution events       | `src/app/test-execution`                                                                                                                                                                 | Authenticated SSE lifecycle-event handling.                                                                                                                                                                                   |
-| API contract sources   | `api/hateoas.yaml`, `api/asyncapi.yaml`                                                                                                                                                  | Input contracts for generated frontend clients and models.                                                                                                                                                                    |
-| Generated API clients  | `src/app/generated/{hateoas,asyncapi}`                                                                                                                                                   | Generated transport types and clients, produced by `scripts/generate-api.mjs`; do not hand-edit.                                                                                                                              |
-| Styling and UI         | `src/styles.css`, `angular.json`                                                                                                                                                         | Global `--trails-*` tokens plus Taiga UI and Foblex Flow style configuration. Taiga is the component library; Angular Material and Lucide provide icons, Foblex Flow powers the modeller, and Chart.js powers metrics charts. |
-| Runtime and deployment | `src/app/core/api-config.ts`, `public/trails-frontend-config.js`, `scripts/write-runtime-config.mjs`, `docker/nginx`, `Dockerfile`, `docker-compose.yml`, `trails-frontend.env.template` | Runtime configuration generation and Nginx container deployment.                                                                                                                                                              |
-| Tests                  | `src/**/*.spec.ts`                                                                                                                                                                       | Unit coverage run by the Angular/Vitest test target.                                                                                                                                                                          |
+`TestPlanModellerGraphService` is the single persistence boundary for the editable graph and serialized test-plan
+definition. It validates unique references, resolved edges, acyclicity, and exactly one start action before submission.
+`TestPlanGraphValidationService` supplies server graph limits from startup capabilities; the graph validator counts
+paths and total action occurrences before allowing save, without expanding execution paths.
 
-## Test-plan persistence boundary
-
-- `TestPlanModellerGraphService` is the single source of truth for the editable modeller graph and its serialized
-  `TestPlanDefinition`.
-- `test-plan-action-graph-validator.ts` validates the serializable action graph before creation: reference IDs are
-  unique, every edge resolves, the graph is acyclic, and it has exactly one start action.
-- `TestPlanModellerPageComponent` must use the graph service's validation result before opening or submitting creation;
-  backend validation remains authoritative.
-
-## Verification
-
-- Unit tests: `npm test -- --watch=false`.
-- Lint: `npm run lint`.
-- Type checks: `npx tsc --noEmit -p tsconfig.app.json` and `npx tsc --noEmit -p tsconfig.spec.json`.
-- API generation: `npm run generate:api`.
-- Normal production build: `npm run build`; its prebuild step regenerates API clients and writes runtime configuration.
-- Compile without regeneration: `npx ng build`.
-- Formatting: `npm run format:check`.
-- Local development: `npm start`.
+The run dialog owns completion-email opt-in and recipient validation; disabled notification is omitted from requests.
+The SDK remains authoritative. `api/hateoas.yaml` mirrors the SDK contract, and all files under
+`src/app/generated` are generated by `scripts/generate-api.mjs` and must not be edited.

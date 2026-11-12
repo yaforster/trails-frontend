@@ -52,7 +52,7 @@ export class CurrentUserProfileService implements OnDestroy {
   updateProfile(update: UserProfileUpdate): Observable<UserProfile> {
     const token: string | null = this.auth.accessToken();
 
-    if (!token) {
+    if (!token && !this.auth.unrestricted()) {
       return throwError(() => new Error('A valid token is required to update the user profile.'));
     }
 
@@ -75,7 +75,7 @@ export class CurrentUserProfileService implements OnDestroy {
   updateProfilePicture(file: File): Observable<UserProfile> {
     const token: string | null = this.auth.accessToken();
 
-    if (!token) {
+    if (!token && !this.auth.unrestricted()) {
       return throwError(
         () => new Error('A valid token is required to update the profile picture.'),
       );
@@ -100,7 +100,7 @@ export class CurrentUserProfileService implements OnDestroy {
   deleteProfilePicture(): Observable<UserProfile> {
     const token: string | null = this.auth.accessToken();
 
-    if (!token) {
+    if (!token && !this.auth.unrestricted()) {
       return throwError(
         () => new Error('A valid token is required to delete the profile picture.'),
       );
@@ -136,7 +136,7 @@ export class CurrentUserProfileService implements OnDestroy {
   private loadProfile(): void {
     const token: string | null = this.auth.accessToken();
 
-    if (!token) {
+    if (!token && !this.auth.unrestricted()) {
       this.clear();
       this.errorSignal.set('A valid token is required to load the user profile.');
       return;
@@ -181,13 +181,13 @@ export class CurrentUserProfileService implements OnDestroy {
       });
   }
 
-  private fetchProfile(token: string): Observable<UserProfile> {
+  private fetchProfile(token: string | null): Observable<UserProfile> {
     return this.http.get<UserProfile>(this.toAbsoluteUrl('/user/profile'), {
       headers: this.authHeaders(token),
     });
   }
 
-  private fetchAvatar(profile: UserProfile, token: string): Observable<ProfileLoadResult> {
+  private fetchAvatar(profile: UserProfile, token: string | null): Observable<ProfileLoadResult> {
     const avatarHref = profileLinkHref(profile.links, 'getProfilePicture');
 
     if (!avatarHref) {
@@ -216,7 +216,7 @@ export class CurrentUserProfileService implements OnDestroy {
       );
   }
 
-  private reloadProfileAfterAvatarChange(token: string): Observable<UserProfile> {
+  private reloadProfileAfterAvatarChange(token: string | null): Observable<UserProfile> {
     return this.fetchProfile(token).pipe(
       switchMap((profile: UserProfile) => this.fetchAvatar(profile, token)),
       map((result: ProfileLoadResult) => {
@@ -229,10 +229,8 @@ export class CurrentUserProfileService implements OnDestroy {
     );
   }
 
-  private authHeaders(token: string): HttpHeaders {
-    return new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
+  private authHeaders(token: string | null): HttpHeaders {
+    return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
   }
 
   private toAbsoluteUrl(pathOrUrl: string): string {

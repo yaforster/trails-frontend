@@ -210,7 +210,7 @@ export class TestPlanModellerPageComponent {
       return;
     }
 
-    if (!token) {
+    if (!token && !this.auth.unrestricted()) {
       this.createTestPlanMessage.set(null);
       this.createTestPlanError.set('A valid token is required to create a test plan.');
       return;
@@ -262,7 +262,7 @@ export class TestPlanModellerPageComponent {
       return;
     }
 
-    if (!token) {
+    if (!token && !this.auth.unrestricted()) {
       this.createTestPlanMessage.set(null);
       this.createTestPlanError.set('A valid token is required to create a test plan.');
       return;

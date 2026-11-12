@@ -177,14 +177,14 @@ export class WorkspaceContextService {
   fetchBlob(url: string): Observable<Blob> {
     const token = this.auth.accessToken();
 
-    if (!token) {
+    if (!token && !this.auth.unrestricted()) {
       throw new Error('A valid token is required to load application context.');
     }
 
     return this.http
       .get(this.apiUrl(url), {
         headers: new HttpHeaders({
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         }),
         responseType: 'blob',
       })
@@ -199,14 +199,14 @@ export class WorkspaceContextService {
   putResource<TBody, TResource>(url: string, body: TBody): Observable<TResource> {
     const token = this.auth.accessToken();
 
-    if (!token) {
+    if (!token && !this.auth.unrestricted()) {
       throw new Error('A valid token is required to update application context.');
     }
 
     return this.http
       .put<TResource>(this.apiUrl(url), body, {
         headers: new HttpHeaders({
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
           'Content-Type': 'application/json',
         }),
       })
@@ -221,14 +221,14 @@ export class WorkspaceContextService {
   postResource<TBody, TResource>(url: string, body: TBody): Observable<TResource> {
     const token = this.auth.accessToken();
 
-    if (!token) {
+    if (!token && !this.auth.unrestricted()) {
       throw new Error('A valid token is required to update application context.');
     }
 
     return this.http
       .post<TResource>(this.apiUrl(url), body, {
         headers: new HttpHeaders({
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
           'Content-Type': 'application/json',
         }),
       })
@@ -243,14 +243,14 @@ export class WorkspaceContextService {
   deleteResource<TResource>(url: string): Observable<TResource> {
     const token = this.auth.accessToken();
 
-    if (!token) {
+    if (!token && !this.auth.unrestricted()) {
       throw new Error('A valid token is required to update application context.');
     }
 
     return this.http
       .delete<TResource>(this.apiUrl(url), {
         headers: new HttpHeaders({
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         }),
       })
       .pipe(
@@ -264,14 +264,14 @@ export class WorkspaceContextService {
   putFormData<TResource>(url: string, formData: FormData): Observable<TResource> {
     const token = this.auth.accessToken();
 
-    if (!token) {
+    if (!token && !this.auth.unrestricted()) {
       throw new Error('A valid token is required to update application context.');
     }
 
     return this.http
       .put<TResource>(this.apiUrl(url), formData, {
         headers: new HttpHeaders({
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         }),
       })
       .pipe(
@@ -285,14 +285,14 @@ export class WorkspaceContextService {
   getPage<TPage>(url: string, page: number): Observable<TPage> {
     const token = this.auth.accessToken();
 
-    if (!token) {
+    if (!token && !this.auth.unrestricted()) {
       throw new Error('A valid token is required to load application context.');
     }
 
     return this.http
       .get<TPage>(this.apiUrl(this.withoutPaginationParams(url)), {
         headers: new HttpHeaders({
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         }),
         params: {
           page,
@@ -310,14 +310,14 @@ export class WorkspaceContextService {
   private getResource<TResource>(url: string): Observable<TResource> {
     const token = this.auth.accessToken();
 
-    if (!token) {
+    if (!token && !this.auth.unrestricted()) {
       throw new Error('A valid token is required to load application context.');
     }
 
     return this.http
       .get<TResource>(this.apiUrl(url), {
         headers: new HttpHeaders({
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         }),
       })
       .pipe(

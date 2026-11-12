@@ -151,8 +151,7 @@ describe('App', () => {
         label: 'View',
         run: () => {
           callbackCalled = true;
-          notificationVisibleDuringCallback =
-            notificationService.notifications().length === 1;
+          notificationVisibleDuringCallback = notificationService.notifications().length === 1;
         },
       },
     });

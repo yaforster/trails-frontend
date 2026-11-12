@@ -3,11 +3,11 @@ import { dirname, resolve } from 'node:path';
 
 const envFilePath = resolve(process.env.TRAILS_FRONTEND_ENV_FILE ?? 'trails-frontend.env');
 const outputPath = resolve('public/trails-frontend-config.js');
-const requiredVariables = ['TRAILS_API_BASE_URL', 'TRAILS_KEYCLOAK_TOKEN_URL'];
+const requiredVariables = ['TRAILS_API_BASE_URL'];
 
 const envValues = {
   ...readEnvFile(envFilePath),
-  ...readProcessEnv(requiredVariables),
+  ...readProcessEnv([...requiredVariables, 'TRAILS_KEYCLOAK_TOKEN_URL']),
 };
 
 for (const variable of requiredVariables) {

@@ -76,6 +76,7 @@ export class ShellComponent implements OnDestroy {
   private navigationFeedbackTimeout: ReturnType<typeof setTimeout> | null = null;
 
   protected readonly authenticated = computed(() => this.auth.authenticated());
+  protected readonly unrestricted = this.auth.unrestricted;
   protected readonly navigationPending = signal(false);
   protected readonly navigationFeedback = signal(false);
   protected readonly navigationExpanded = signal(true);

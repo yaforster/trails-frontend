@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateNewApplicationData, CreateNewApplicationErrors, CreateNewApplicationResponses, CreateNewElementData, CreateNewElementErrors, CreateNewElementResponses, CreateNewStageData, CreateNewStageErrors, CreateNewStageResponses, CreateNewTestDataData, CreateNewTestDataErrors, CreateNewTestDataResponses, CreateNewTestPlanData, CreateNewTestPlanErrors, CreateNewTestPlanResponses, DeleteApplicationData, DeleteApplicationErrors, DeleteApplicationResponses, DeleteElementData, DeleteElementErrors, DeleteElementResponses, DeleteElementScreenshotData, DeleteElementScreenshotErrors, DeleteElementScreenshotResponses, DeleteProfilePictureData, DeleteProfilePictureResponses, DeleteStageData, DeleteStageErrors, DeleteStageResponses, DeleteTestDataData, DeleteTestDataErrors, DeleteTestDataResponses, DeleteTestPlanData, DeleteTestPlanErrors, DeleteTestPlanResponses, DeleteUserDataData, DeleteUserDataErrors, DeleteUserDataResponses, DownloadActionResultScreenshotInTestPathData, DownloadActionResultScreenshotInTestPathErrors, DownloadActionResultScreenshotInTestPathResponses, DownloadArtifactInTestPathData, DownloadArtifactInTestPathErrors, DownloadArtifactInTestPathResponses, GetActionsData, GetActionsErrors, GetActionsResponses, GetApplicationData, GetApplicationErrors, GetApplicationResponses, GetBrowserResultInTestRunData, GetBrowserResultInTestRunErrors, GetBrowserResultInTestRunResponses, GetElementData, GetElementErrors, GetElementResponses, GetElementScreenshotData, GetElementScreenshotErrors, GetElementScreenshotResponses, GetPathResultInTestSetData, GetPathResultInTestSetErrors, GetPathResultInTestSetResponses, GetProfileData, GetProfilePictureData, GetProfilePictureResponses, GetProfileResponses, GetStageData, GetStageErrors, GetStageResponses, GetTestDataData, GetTestDataErrors, GetTestDataResponses, GetTestPlanData, GetTestPlanErrors, GetTestPlanResponses, GetTestRunData, GetTestRunErrors, GetTestRunHistoryData, GetTestRunHistoryErrors, GetTestRunHistoryResponses, GetTestRunResponses, GetTestRunStatisticsData, GetTestRunStatisticsErrors, GetTestRunStatisticsResponses, ListActionResultsChainInTestPathData, ListActionResultsChainInTestPathErrors, ListActionResultsChainInTestPathResponses, ListApplicationsData, ListApplicationsErrors, ListApplicationsResponses, ListArtifactsInTestPathData, ListArtifactsInTestPathErrors, ListArtifactsInTestPathResponses, ListBrowserResultsData, ListBrowserResultsErrors, ListBrowserResultsResponses, ListCapabilitiesData, ListCapabilitiesErrors, ListCapabilitiesResponses, ListElementsData, ListElementsErrors, ListElementsResponses, ListPathResultsInTestSetData, ListPathResultsInTestSetErrors, ListPathResultsInTestSetResponses, ListStagesData, ListStagesErrors, ListStagesResponses, ListTestDataData, ListTestDataErrors, ListTestDataResponses, ListTestPlansData, ListTestPlansErrors, ListTestPlansResponses, ListTestRunsData, ListTestRunsErrors, ListTestRunsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, PrintPathResultInTestSetData, PrintPathResultInTestSetErrors, PrintPathResultInTestSetResponses, PrintTestRunData, PrintTestRunErrors, PrintTestRunResponses, PrintTestSetResultInTestRunData, PrintTestSetResultInTestRunErrors, PrintTestSetResultInTestRunResponses, PromoteElementData, PromoteElementErrors, PromoteElementResponses, PromoteTestPlanData, PromoteTestPlanErrors, PromoteTestPlanResponses, RestoreApplicationData, RestoreApplicationErrors, RestoreApplicationResponses, RestoreElementData, RestoreElementErrors, RestoreElementResponses, RestoreStageData, RestoreStageErrors, RestoreStageResponses, RestoreTestDataData, RestoreTestDataErrors, RestoreTestDataResponses, RestoreTestPlanData, RestoreTestPlanErrors, RestoreTestPlanResponses, RunTestData, RunTestErrors, RunTestResponses, UpdateElementData, UpdateElementErrors, UpdateElementResponses, UpdateProfileData, UpdateProfilePictureData, UpdateProfilePictureResponses, UpdateProfileResponses, UpdateTestDataData, UpdateTestDataErrors, UpdateTestDataResponses, UploadElementScreenshotData, UploadElementScreenshotErrors, UploadElementScreenshotResponses } from './types.gen';
+import type { CreateNewApplicationData, CreateNewApplicationErrors, CreateNewApplicationResponses, CreateNewElementData, CreateNewElementErrors, CreateNewElementResponses, CreateNewStageData, CreateNewStageErrors, CreateNewStageResponses, CreateNewTestDataData, CreateNewTestDataErrors, CreateNewTestDataResponses, CreateNewTestPlanData, CreateNewTestPlanErrors, CreateNewTestPlanResponses, DeleteApplicationData, DeleteApplicationErrors, DeleteApplicationResponses, DeleteElementData, DeleteElementErrors, DeleteElementResponses, DeleteElementScreenshotData, DeleteElementScreenshotErrors, DeleteElementScreenshotResponses, DeleteProfilePictureData, DeleteProfilePictureResponses, DeleteStageData, DeleteStageErrors, DeleteStageResponses, DeleteTestDataData, DeleteTestDataErrors, DeleteTestDataResponses, DeleteTestPlanData, DeleteTestPlanErrors, DeleteTestPlanResponses, DeleteUserDataData, DeleteUserDataErrors, DeleteUserDataResponses, DownloadActionResultScreenshotInTestPathData, DownloadActionResultScreenshotInTestPathErrors, DownloadActionResultScreenshotInTestPathResponses, DownloadArtifactInTestPathData, DownloadArtifactInTestPathErrors, DownloadArtifactInTestPathResponses, GetActionsData, GetActionsErrors, GetActionsResponses, GetApplicationData, GetApplicationErrors, GetApplicationResponses, GetBrowserResultInTestRunData, GetBrowserResultInTestRunErrors, GetBrowserResultInTestRunResponses, GetDeploymentData, GetDeploymentErrors, GetDeploymentResponses, GetElementData, GetElementErrors, GetElementResponses, GetElementScreenshotData, GetElementScreenshotErrors, GetElementScreenshotResponses, GetPathResultInTestSetData, GetPathResultInTestSetErrors, GetPathResultInTestSetResponses, GetProfileData, GetProfilePictureData, GetProfilePictureResponses, GetProfileResponses, GetStageData, GetStageErrors, GetStageResponses, GetTestDataData, GetTestDataErrors, GetTestDataResponses, GetTestPlanData, GetTestPlanErrors, GetTestPlanResponses, GetTestRunData, GetTestRunErrors, GetTestRunHistoryData, GetTestRunHistoryErrors, GetTestRunHistoryResponses, GetTestRunResponses, GetTestRunStatisticsData, GetTestRunStatisticsErrors, GetTestRunStatisticsResponses, ListActionResultsChainInTestPathData, ListActionResultsChainInTestPathErrors, ListActionResultsChainInTestPathResponses, ListApplicationsData, ListApplicationsErrors, ListApplicationsResponses, ListArtifactsInTestPathData, ListArtifactsInTestPathErrors, ListArtifactsInTestPathResponses, ListBrowserResultsData, ListBrowserResultsErrors, ListBrowserResultsResponses, ListCapabilitiesData, ListCapabilitiesErrors, ListCapabilitiesResponses, ListDeploymentsData, ListDeploymentsErrors, ListDeploymentsResponses, ListElementsData, ListElementsErrors, ListElementsResponses, ListPathResultsInTestSetData, ListPathResultsInTestSetErrors, ListPathResultsInTestSetResponses, ListStagesData, ListStagesErrors, ListStagesResponses, ListTestDataData, ListTestDataErrors, ListTestDataResponses, ListTestPlansData, ListTestPlansErrors, ListTestPlansResponses, ListTestRunsData, ListTestRunsErrors, ListTestRunsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, PrintPathResultInTestSetData, PrintPathResultInTestSetErrors, PrintPathResultInTestSetResponses, PrintTestRunData, PrintTestRunErrors, PrintTestRunResponses, PrintTestSetResultInTestRunData, PrintTestSetResultInTestRunErrors, PrintTestSetResultInTestRunResponses, PromoteElementData, PromoteElementErrors, PromoteElementResponses, PromoteTestPlanData, PromoteTestPlanErrors, PromoteTestPlanResponses, ReportDeploymentData, ReportDeploymentErrors, ReportDeploymentResponses, RestoreApplicationData, RestoreApplicationErrors, RestoreApplicationResponses, RestoreElementData, RestoreElementErrors, RestoreElementResponses, RestoreStageData, RestoreStageErrors, RestoreStageResponses, RestoreTestDataData, RestoreTestDataErrors, RestoreTestDataResponses, RestoreTestPlanData, RestoreTestPlanErrors, RestoreTestPlanResponses, RunTestData, RunTestErrors, RunTestResponses, UpdateElementData, UpdateElementErrors, UpdateElementResponses, UpdateProfileData, UpdateProfilePictureData, UpdateProfilePictureResponses, UpdateProfileResponses, UpdateTestDataData, UpdateTestDataErrors, UpdateTestDataResponses, UploadElementScreenshotData, UploadElementScreenshotErrors, UploadElementScreenshotResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -286,6 +286,39 @@ export const getStage = <ThrowOnError extends boolean = false>(options: Options<
 export const restoreStage = <ThrowOnError extends boolean = false>(options: Options<RestoreStageData, ThrowOnError>) => (options.client ?? client).post<RestoreStageResponses, RestoreStageErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/applications/{applicationId}/stages/{stageId}/restore',
+    ...options
+});
+
+/**
+ * List deployments for a stage
+ */
+export const listDeployments = <ThrowOnError extends boolean = false>(options: Options<ListDeploymentsData, ThrowOnError>) => (options.client ?? client).get<ListDeploymentsResponses, ListDeploymentsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/applications/{applicationId}/stages/{stageId}/deployments',
+    ...options
+});
+
+/**
+ * Report a deployment for a stage
+ *
+ * Stores that a CI/CD pipeline deployed a specific application version to the given stage at a known timestamp.
+ */
+export const reportDeployment = <ThrowOnError extends boolean = false>(options: Options<ReportDeploymentData, ThrowOnError>) => (options.client ?? client).put<ReportDeploymentResponses, ReportDeploymentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/applications/{applicationId}/stages/{stageId}/deployments',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get deployment
+ */
+export const getDeployment = <ThrowOnError extends boolean = false>(options: Options<GetDeploymentData, ThrowOnError>) => (options.client ?? client).get<GetDeploymentResponses, GetDeploymentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/applications/{applicationId}/stages/{stageId}/deployments/{deploymentId}',
     ...options
 });
 
@@ -618,6 +651,8 @@ export const downloadArtifactInTestPath = <ThrowOnError extends boolean = false>
 
 /**
  * Start test execution asynchronously
+ *
+ * Completion email requires explicit emailEnabled=true and available delivery. Invalid or unavailable notification requests return HTTP 400 validation errors before execution. Acceptance is not mail delivery.
  */
 export const runTest = <ThrowOnError extends boolean = false>(options: Options<RunTestData, ThrowOnError>) => (options.client ?? client).post<RunTestResponses, RunTestErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

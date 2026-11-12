@@ -22,7 +22,7 @@ export class TestExecutionEventsService {
       const abortController = new AbortController();
       const token = this.auth.accessToken();
 
-      if (!token) {
+      if (!token && !this.auth.unrestricted()) {
         subscriber.error(
           new Error('A valid access token is required to follow the test execution event stream.'),
         );
@@ -44,7 +44,7 @@ export class TestExecutionEventsService {
 
   private async streamEvents(
     url: string,
-    token: string,
+    token: string | null,
     abortController: AbortController,
     subscriber: Subscriber<TestExecutionLifecycleEvent>,
   ): Promise<void> {
@@ -52,7 +52,7 @@ export class TestExecutionEventsService {
       const response = await fetch(url, {
         headers: {
           Accept: 'text/event-stream',
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         signal: abortController.signal,
       });

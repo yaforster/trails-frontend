@@ -33,12 +33,12 @@ function readRuntimeConfig(): TrailsFrontendRuntimeConfig {
   const config: Partial<TrailsFrontendRuntimeConfig> | undefined =
     typeof window === 'undefined' ? undefined : window.__TRAILS_FRONTEND_CONFIG__;
 
-  if (!config?.trailsApiBaseUrl || !config.keycloakTokenUrl) {
+  if (!config?.trailsApiBaseUrl) {
     throw new Error('Missing frontend runtime configuration. Check trails-frontend-config.js.');
   }
 
   return {
     trailsApiBaseUrl: config.trailsApiBaseUrl,
-    keycloakTokenUrl: config.keycloakTokenUrl,
+    keycloakTokenUrl: config.keycloakTokenUrl ?? '',
   };
 }

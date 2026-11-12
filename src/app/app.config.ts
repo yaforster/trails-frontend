@@ -4,6 +4,7 @@ import {
   ENVIRONMENT_INITIALIZER,
   inject,
   provideBrowserGlobalErrorListeners,
+  provideAppInitializer,
 } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -12,6 +13,7 @@ import { provideRouter } from '@angular/router';
 import { HATEOAS_API_BASE_URL } from './core/api-config';
 import { client as hateoasClient } from './generated/hateoas/client.gen';
 import { routes } from './app.routes';
+import { CapabilitiesService } from './core/capabilities.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -26,6 +28,7 @@ export const appConfig: ApplicationConfig = {
       },
     },
     provideHttpClient(),
+    provideAppInitializer(() => inject(CapabilitiesService).initialize()),
     provideRouter(routes),
     provideAnimationsAsync(),
     provideTaiga(),

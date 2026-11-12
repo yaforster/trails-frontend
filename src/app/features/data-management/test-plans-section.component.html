@@ -56,8 +56,56 @@
       }
     </div>
 
+    <section class="run-notification-section" aria-labelledby="run-notification-heading">
+      <h3 id="run-notification-heading">Completion notification</h3>
+      <label class="run-notification-toggle">
+        <input
+          type="checkbox"
+          [ngModel]="emailNotificationEnabled()"
+          [disabled]="startingTestRun() || !!runConfirmation()"
+          (ngModelChange)="setEmailNotificationEnabled($event)"
+        />
+        <span>Email test results after completion</span>
+      </label>
+
+      @if (emailNotificationEnabled()) {
+        <div class="run-recipient-input">
+          <label for="run-recipient-emails">Recipient email addresses</label>
+          <tui-textfield multi>
+            <input
+              id="run-recipient-emails"
+              tuiInputChip
+              [attr.aria-describedby]="
+                recipientEmailError()
+                  ? 'run-recipient-help run-recipient-error'
+                  : 'run-recipient-help'
+              "
+              [attr.aria-invalid]="!!recipientEmailError()"
+              [ngModel]="recipientEmails()"
+              [separator]="recipientEmailSeparator"
+              [unique]="false"
+              [disabled]="startingTestRun() || !!runConfirmation()"
+              (ngModelChange)="updateRecipientEmails($event)"
+            />
+            <ng-template tuiItem>
+              <tui-input-chip />
+            </ng-template>
+          </tui-textfield>
+          <p id="run-recipient-help">
+            Press Enter, comma, semicolon, or space to add an address. Use up to 100 addresses.
+            Email is best effort after completion; recipients still need permission to view results.
+          </p>
+          @if (recipientEmailError()) {
+            <p id="run-recipient-error" class="table-error" role="status">
+              {{ recipientEmailError() }}
+            </p>
+          }
+        </div>
+      }
+    </section>
+
     @if (runError()) {
-      <p class="table-error">{{ runError() }}</p>
+      <p class="table-error" role="alert">{{ runError() }}</p>
     }
 
     @if (runConfirmation()) {
@@ -84,7 +132,7 @@
           tuiButton
           type="button"
           class="start-run-button"
-          [disabled]="startingTestRun() || selectedBrowsers().length === 0"
+          [disabled]="startingTestRun() || !canStartTestRun()"
           (click)="startTestRun()"
         >
           @if (startingTestRun()) {

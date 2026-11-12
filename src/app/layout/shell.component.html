@@ -72,7 +72,7 @@
       <tui-loader size="s" [inheritColor]="true" />
     </div>
 
-    @if (authenticated() && !userFeaturesActive()) {
+    @if (authenticated() && !unrestricted() && !userFeaturesActive()) {
       <button tuiIconButton type="button" appearance="flat" aria-label="Logout" (click)="logout()">
         <svg lucideLogOut size="18"></svg>
       </button>
@@ -109,12 +109,7 @@
 >
   <nav class="side-nav" aria-label="Primary">
     @if (!authenticated()) {
-      <a
-        tuiAsideItem
-        routerLink="/login"
-        aria-label="Login"
-        (click)="showTabLoadingFeedback()"
-      >
+      <a tuiAsideItem routerLink="/login" aria-label="Login" (click)="showTabLoadingFeedback()">
         <svg lucideLockKeyhole aria-hidden="true"></svg>
         <span class="side-nav-label" aria-hidden="true">Login</span>
       </a>

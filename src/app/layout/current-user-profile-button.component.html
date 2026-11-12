@@ -194,10 +194,17 @@
             </button>
           }
         }
-        <button class="secondary-icon-button" type="button" aria-label="Logout" (click)="logout()">
-          <svg lucideLogOut size="16"></svg>
-          <span>Logout</span>
-        </button>
+        @if (!unrestricted()) {
+          <button
+            class="secondary-icon-button"
+            type="button"
+            aria-label="Logout"
+            (click)="logout()"
+          >
+            <svg lucideLogOut size="16"></svg>
+            <span>Logout</span>
+          </button>
+        }
       </div>
     </section>
   }

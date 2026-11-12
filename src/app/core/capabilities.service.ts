@@ -1,7 +1,6 @@
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, Signal, computed, inject, signal } from '@angular/core';
-import { finalize } from 'rxjs';
-import { AuthService } from '../auth/auth.service';
+import { Observable, catchError, finalize, of, shareReplay, tap } from 'rxjs';
 import type { Capability, CapabilityName } from '../generated/hateoas/types.gen';
 import { HATEOAS_API_BASE_URL } from './api-config';
 
@@ -10,17 +9,18 @@ import { HATEOAS_API_BASE_URL } from './api-config';
 })
 export class CapabilitiesService {
   private readonly apiBaseUrl = inject(HATEOAS_API_BASE_URL);
-  private readonly auth = inject(AuthService);
   private readonly http = inject(HttpClient);
   private readonly capabilitiesSignal = signal<readonly Capability[]>([]);
   private readonly loadingSignal = signal(false);
   private readonly loadedSignal = signal(false);
   private readonly errorSignal = signal<string | null>(null);
+  private request: Observable<readonly Capability[]> | null = null;
 
   readonly capabilities: Signal<readonly Capability[]> = this.capabilitiesSignal.asReadonly();
   readonly loading: Signal<boolean> = this.loadingSignal.asReadonly();
   readonly loaded: Signal<boolean> = this.loadedSignal.asReadonly();
   readonly error: Signal<string | null> = this.errorSignal.asReadonly();
+  readonly unrestricted = computed(() => this.booleanValue('AUTHENTICATION_REQUIRED') === false);
   readonly capabilitiesByName = computed<ReadonlyMap<CapabilityName, Capability>>(() => {
     const capabilitiesByName = new Map<CapabilityName, Capability>();
 
@@ -82,32 +82,34 @@ export class CapabilitiesService {
   }
 
   private loadCapabilities(): void {
-    const token = this.auth.accessToken();
+    this.initialize().subscribe();
+  }
 
-    if (!token) {
-      this.errorSignal.set('A valid token is required to load service capabilities.');
-      return;
+  initialize(): Observable<readonly Capability[]> {
+    if (this.loadedSignal()) {
+      return of(this.capabilitiesSignal());
     }
-
+    if (this.request) {
+      return this.request;
+    }
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
-
-    this.http
-      .get<Capability[]>(this.apiUrl('/api/capabilities'), {
-        headers: new HttpHeaders({
-          Authorization: `Bearer ${token}`,
-        }),
-      })
-      .pipe(finalize(() => this.loadingSignal.set(false)))
-      .subscribe({
-        next: (capabilities) => {
-          this.capabilitiesSignal.set(capabilities);
-          this.loadedSignal.set(true);
-        },
-        error: (error: unknown) => {
-          this.errorSignal.set(this.toCapabilitiesError(error).message);
-        },
-      });
+    this.request = this.http.get<Capability[]>(this.apiUrl('/api/capabilities')).pipe(
+      tap((capabilities) => {
+        this.capabilitiesSignal.set(capabilities);
+        this.loadedSignal.set(true);
+      }),
+      catchError((error: unknown) => {
+        this.errorSignal.set(this.toCapabilitiesError(error).message);
+        return of([]);
+      }),
+      finalize(() => {
+        this.loadingSignal.set(false);
+        this.request = null;
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
+    return this.request;
   }
 
   private apiUrl(path: string): string {

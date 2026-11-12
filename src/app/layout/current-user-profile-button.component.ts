@@ -68,6 +68,7 @@ const avatarFormatAliases: Record<string, AvatarFormat> = {
 })
 export class CurrentUserProfileButtonComponent implements OnDestroy {
   private readonly auth = inject(AuthService);
+  protected readonly unrestricted = this.auth.unrestricted;
   private readonly capabilities = inject(CapabilitiesService);
   private readonly currentUser = inject(CurrentUserProfileService);
   private readonly destroyRef = inject(DestroyRef);

@@ -449,6 +449,38 @@ app-test-plans-table {
   width: 2.75rem;
 }
 
+.run-notification-section,
+.run-recipient-input {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.run-notification-section {
+  border-top: 1px solid var(--trails-border);
+  padding-top: 1rem;
+}
+
+.run-notification-section h3,
+.run-recipient-input p {
+  margin: 0;
+}
+
+.run-notification-section h3,
+.run-recipient-input label {
+  font-size: 0.875rem;
+}
+
+.run-notification-toggle {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.run-recipient-input > p {
+  color: var(--trails-text-muted);
+  font-size: 0.8125rem;
+}
+
 .run-confirmation {
   color: var(--trails-accent);
   font-weight: 600;

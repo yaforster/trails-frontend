@@ -15,6 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import { LucidePlay } from '@lucide/angular';
 import { TuiButton, TuiDialog, TuiLoader } from '@taiga-ui/core';
+import { TuiInputChip } from '@taiga-ui/kit';
 import { finalize } from 'rxjs';
 import { WorkspaceContextService } from '../../context/workspace-context.service';
 import { hasResourceLink, resourceLinkHref } from '../../core/hateoas-links';
@@ -26,6 +27,7 @@ import type {
 } from '../../generated/hateoas/types.gen';
 import { TestPlanModellerGraphService } from '../test-plan-modeller/test-plan-modeller-graph.service';
 import { browserOptions } from './browser-options';
+import { normalizeRecipientEmail, recipientEmailError } from './completion-email';
 import { type ResourceTab } from './data-management.models';
 import { hasRestorableRetiredResource, normalizeResourceTab } from './resource-tabs';
 import { TestPlanExecutionNotificationService } from './test-plan-execution-notification.service';
@@ -43,6 +45,8 @@ type RestoreTarget = {
   href: string;
 };
 
+const RECIPIENT_EMAIL_SEPARATOR = /[\s,;]+/;
+
 @Component({
   selector: 'app-test-plans-section',
   imports: [
@@ -52,6 +56,7 @@ type RestoreTarget = {
     NgOptimizedImage,
     TuiButton,
     TuiDialog,
+    TuiInputChip,
     TuiLoader,
     TestPlansTableComponent,
   ],
@@ -95,6 +100,17 @@ export class TestPlansSectionComponent {
   protected readonly runConfirmation = signal<string | null>(null);
   protected readonly runningTestPlanId = signal<number | null>(null);
   protected readonly browserOptions = browserOptions;
+  protected readonly recipientEmailSeparator = RECIPIENT_EMAIL_SEPARATOR;
+  protected readonly emailNotificationEnabled = signal(false);
+  protected readonly recipientEmails = signal<string[]>([]);
+  protected readonly recipientEmailError = computed(() =>
+    this.emailNotificationEnabled() ? recipientEmailError(this.recipientEmails()) : null,
+  );
+  protected readonly canStartTestRun = computed(
+    () =>
+      this.selectedBrowsers().length > 0 &&
+      (!this.emailNotificationEnabled() || this.recipientEmailError() === null),
+  );
 
   protected readonly promoteDialogOpen = signal(false);
   protected readonly promoteTarget = signal<PromoteTarget | null>(null);
@@ -168,6 +184,7 @@ export class TestPlansSectionComponent {
     this.runError.set(null);
     this.runConfirmation.set(null);
     this.startingTestRun.set(false);
+    this.resetRunNotification();
     this.runDialogOpen.set(true);
   }
 
@@ -180,6 +197,7 @@ export class TestPlansSectionComponent {
     this.runDialogTestPlan.set(null);
     this.runError.set(null);
     this.runConfirmation.set(null);
+    this.resetRunNotification();
   }
 
   protected toggleBrowser(browser: Browser): void {
@@ -201,6 +219,18 @@ export class TestPlansSectionComponent {
     return this.selectedBrowsers().includes(browser);
   }
 
+  protected setEmailNotificationEnabled(enabled: boolean): void {
+    this.emailNotificationEnabled.set(enabled);
+
+    if (!enabled) {
+      this.recipientEmails.set([]);
+    }
+  }
+
+  protected updateRecipientEmails(emails: string[]): void {
+    this.recipientEmails.set(emails.map((email) => email.trim()).filter(Boolean));
+  }
+
   protected startTestRun(): void {
     const testPlan = this.runDialogTestPlan();
     const testPlanId = testPlan?.id;
@@ -209,6 +239,8 @@ export class TestPlansSectionComponent {
     const applicationId = this.context.selectedApplicationId();
     const stageId = this.context.selectedStageId();
     const executeHref = resourceLinkHref(testPlan, 'execute');
+    const emailEnabled = this.emailNotificationEnabled();
+    const recipientEmails = this.recipientEmails();
 
     if (
       testPlanId === undefined ||
@@ -216,7 +248,7 @@ export class TestPlansSectionComponent {
       stageId === null ||
       !executeHref ||
       this.startingTestRun() ||
-      browsers.length === 0
+      !this.canStartTestRun()
     ) {
       return;
     }
@@ -224,6 +256,14 @@ export class TestPlansSectionComponent {
     const definition: TestPlanRunDefinition = {
       testPlanID: testPlanId,
       browsersToTest: browsers,
+      ...(emailEnabled
+        ? {
+            completionNotification: {
+              emailEnabled: true,
+              recipientEmails: recipientEmails.map(normalizeRecipientEmail),
+            },
+          }
+        : {}),
     };
 
     this.startingTestRun.set(true);
@@ -251,6 +291,7 @@ export class TestPlansSectionComponent {
           this.runDialogTestPlan.set(null);
           this.runConfirmation.set(null);
           this.selectedBrowsers.set([]);
+          this.resetRunNotification();
           this.listenForTestExecution(
             accepted.executionId,
             testPlanLabel,
@@ -533,6 +574,11 @@ export class TestPlansSectionComponent {
       this.runningTestPlanId() === null &&
       hasResourceLink(testPlan, 'execute')
     );
+  }
+
+  private resetRunNotification(): void {
+    this.emailNotificationEnabled.set(false);
+    this.recipientEmails.set([]);
   }
 
   private listenForTestExecution(

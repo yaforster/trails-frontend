@@ -29,7 +29,7 @@ import {
   toActionDetails,
   toActionFormState,
 } from './test-plan-modeller-action-details.mapper';
-import { validateTestPlanActionGraph } from './test-plan-action-graph-validator';
+import { TestPlanGraphValidationService } from './test-plan-graph-validation.service';
 import { TestPlanModellerQueuedDefinitionStore } from './test-plan-modeller-queued-definition.store';
 
 export type {
@@ -45,6 +45,7 @@ export type {
 })
 export class TestPlanModellerGraphService {
   private readonly queuedDefinitions = inject(TestPlanModellerQueuedDefinitionStore);
+  private readonly graphValidation = inject(TestPlanGraphValidationService);
 
   readonly actionTypes = actionTypes;
   readonly valueComputationTypes = valueComputationTypes;
@@ -89,7 +90,7 @@ export class TestPlanModellerGraphService {
       return 'Every action needs a label and action type before creating a test plan.';
     }
 
-    return validateTestPlanActionGraph(this.testPlanDefinition().testSteps ?? []).message;
+    return this.graphValidation.validationError(this.testPlanDefinition().testSteps ?? []);
   });
   readonly canSaveTestPlanDefinition = computed(
     () => this.testPlanDefinitionValidationError() === null,

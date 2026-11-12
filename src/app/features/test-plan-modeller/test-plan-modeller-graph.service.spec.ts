@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { CapabilitiesService } from '../../core/capabilities.service';
 import type { ActionDefinition, TestPlanDefinition } from '../../generated/hateoas/types.gen';
 import {
   createDefaultActionFormState,
@@ -11,7 +12,9 @@ describe('TestPlanModellerGraphService groups', () => {
   let graph: TestPlanModellerGraphService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [{ provide: CapabilitiesService, useValue: { numberValue: () => 100 } }],
+    });
     graph = TestBed.inject(TestPlanModellerGraphService);
     graph.reset();
   });

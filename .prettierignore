@@ -1,5 +1,7 @@
 dist
 node_modules
 coverage
+.agents
+.serena
 public/trails-frontend-config.js
 src/app/generated

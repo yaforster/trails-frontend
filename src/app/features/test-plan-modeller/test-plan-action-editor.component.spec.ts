@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { CapabilitiesService } from '../../core/capabilities.service';
 import type { ActionDetailsType, TestDataSet } from '../../generated/hateoas/types.gen';
 import {
   createDefaultActionFormState,
@@ -16,6 +17,7 @@ describe('TestPlanActionEditorComponent coordinate click', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [TestPlanActionEditorComponent],
+      providers: [{ provide: CapabilitiesService, useValue: { numberValue: () => 100 } }],
     });
     fixture = TestBed.createComponent(TestPlanActionEditorComponent);
     component = fixture.componentInstance;

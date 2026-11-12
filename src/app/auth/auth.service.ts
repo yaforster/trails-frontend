@@ -1,7 +1,8 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Injectable, OnDestroy, computed, inject, signal } from '@angular/core';
+import { Injectable, OnDestroy, computed, effect, inject, signal } from '@angular/core';
 import { Observable, catchError, finalize, map, shareReplay, tap, throwError } from 'rxjs';
 import { KEYCLOAK_TOKEN_URL } from '../core/api-config';
+import { CapabilitiesService } from '../core/capabilities.service';
 
 const storageKey = 'trails.auth.token';
 const refreshDelayRatio = 0.8;
@@ -53,22 +54,29 @@ type JwtPayload = {
 })
 export class AuthService implements OnDestroy {
   private readonly http = inject(HttpClient);
+  private readonly capabilities = inject(CapabilitiesService);
   private readonly keycloakTokenUrl = inject(KEYCLOAK_TOKEN_URL);
   private readonly token = signal<StoredToken | null>(this.readStoredToken());
   private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
   private refreshRequest: Observable<StoredToken> | null = null;
-  readonly authenticated = computed(() => this.isValidToken(this.token()));
+  readonly unrestricted = this.capabilities.unrestricted;
+  readonly authenticated = computed(() => this.unrestricted() || this.isValidToken(this.token()));
   readonly roles = computed(() => this.extractRoles(this.token()?.access_token));
 
   constructor() {
-    const token = this.token();
-
-    if (token) {
-      this.scheduleRefresh(token);
-    }
+    effect(() => {
+      this.clearRefreshTimer();
+      const token = this.token();
+      if (this.capabilities.loaded() && !this.unrestricted() && token) {
+        this.scheduleRefresh(token);
+      }
+    });
   }
 
   login(request: LoginRequest): Observable<StoredToken> {
+    if (!this.keycloakTokenUrl) {
+      return throwError(() => new Error('Configure TRAILS_KEYCLOAK_TOKEN_URL for provider login.'));
+    }
     const body: URLSearchParams = this.buildAuthRequestBody(request);
 
     return this.http
@@ -99,6 +107,12 @@ export class AuthService implements OnDestroy {
   }
 
   refreshAccessToken(): Observable<StoredToken> {
+    if (this.unrestricted()) {
+      return throwError(() => new Error('Token refresh is not used in unrestricted mode.'));
+    }
+    if (!this.keycloakTokenUrl) {
+      return throwError(() => new Error('Configure TRAILS_KEYCLOAK_TOKEN_URL for token refresh.'));
+    }
     const currentToken = this.token();
 
     if (!this.canRefreshToken(currentToken)) {
@@ -159,10 +173,16 @@ export class AuthService implements OnDestroy {
   }
 
   accessToken(): string | null {
+    if (this.unrestricted()) {
+      return null;
+    }
     return this.hasValidToken() ? (this.token()?.access_token ?? null) : null;
   }
 
   hasRole(role: string): boolean {
+    if (this.unrestricted()) {
+      return true;
+    }
     if (!this.authenticated()) {
       return false;
     }

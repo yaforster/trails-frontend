@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LucideLogIn } from '@lucide/angular';
@@ -28,6 +28,14 @@ export class LoginPageComponent {
 
   protected readonly error = signal<string | null>(null);
   protected readonly loading = signal(false);
+
+  constructor() {
+    effect(() => {
+      if (this.auth.unrestricted()) {
+        void this.router.navigate(['/data-management']);
+      }
+    });
+  }
 
   protected readonly form = this.fb.nonNullable.group({
     username: ['', Validators.required],

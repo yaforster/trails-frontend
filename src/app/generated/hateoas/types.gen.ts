@@ -20,7 +20,7 @@ export type Link = {
     templated?: boolean;
 };
 
-export type CapabilityName = 'USER_IMAGE_MAX_SIZE_BYTES' | 'USER_IMAGE_MAX_WIDTH' | 'USER_IMAGE_MAX_HEIGHT' | 'SUPPORTED_IMAGE_FORMATS' | 'FILE_DOWNLOAD_TIMEOUT_MILLIS' | 'FILE_DOWNLOAD_BASE_DIRECTORY' | 'USER_FEATURES_ACTIVE';
+export type CapabilityName = 'USER_IMAGE_MAX_SIZE_BYTES' | 'USER_IMAGE_MAX_WIDTH' | 'USER_IMAGE_MAX_HEIGHT' | 'SUPPORTED_IMAGE_FORMATS' | 'FILE_DOWNLOAD_TIMEOUT_MILLIS' | 'FILE_DOWNLOAD_BASE_DIRECTORY' | 'USER_FEATURES_ACTIVE' | 'AUTHENTICATION_REQUIRED' | 'TEST_PLAN_MAXIMUM_ACTIONS' | 'TEST_PLAN_MAXIMUM_PATHS' | 'TEST_PLAN_MAXIMUM_ACTION_OCCURRENCES';
 
 export type Capability = {
     name: CapabilityName;
@@ -73,6 +73,11 @@ export type PagedElement = PageMetadata & {
 
 export type PagedTestDataSet = PageMetadata & {
     items?: Array<TestDataSet>;
+    _links?: Links;
+};
+
+export type PagedDeployment = PageMetadata & {
+    items?: Array<Deployment>;
     _links?: Links;
 };
 
@@ -170,6 +175,26 @@ export type Stage = {
     label?: string;
     url?: string;
     retired?: boolean;
+    _links?: Links;
+};
+
+export type DeploymentDefinition = {
+    /**
+     * Application version deployed to the stage.
+     */
+    version: string;
+    /**
+     * Timestamp at which the deployment took place.
+     */
+    deployedAt: string;
+};
+
+export type Deployment = {
+    id?: number;
+    applicationId?: number;
+    stageId?: number;
+    version?: string;
+    deployedAt?: string;
     _links?: Links;
 };
 
@@ -520,7 +545,22 @@ export type TestPlanGroup = {
 export type TestPlanRunDefinition = {
     testPlanID?: number;
     browsersToTest?: Array<Browser>;
+    completionNotification?: TestRunCompletionNotification;
 };
+
+/**
+ * An omitted or null notification object, or omitted/false emailEnabled, disables notification and ignores recipients. Enabled requests require 1-100 unique ASCII dot-atom mailboxes, at most 254 characters each (local part at most 64). Surrounding ASCII spaces are trimmed and domains lowercased; local-part case is preserved. Duplicates after normalization, control characters, display names, groups, quoted local parts and domain literals are rejected. Recipients grant no result access.
+ */
+export type TestRunCompletionNotification = {
+    /**
+     * Explicit true opts in; omission defaults to false. Explicit null is an invalid boolean value.
+     */
+    emailEnabled?: boolean;
+    /**
+     * When emailEnabled is true, 1-100 entries of at most 254 ASCII characters each are required. When disabled, recipient contents are ignored, including null entries. Limits are enforced conditionally by the server rather than unconditional schema constraints.
+     */
+    recipientEmails?: Array<string | null> | null;
+} | null;
 
 export type TestExecutionStatus = 'ACCEPTED' | 'RUNNING' | 'COMPLETED' | 'FAILED';
 
@@ -693,6 +733,8 @@ export type IncludeRetired = boolean;
 export type ExecutionId = string;
 
 export type TestDataId = number;
+
+export type DeploymentId = number;
 
 export type ApplicationId = number;
 
@@ -1343,6 +1385,94 @@ export type RestoreStageResponses = {
 };
 
 export type RestoreStageResponse = RestoreStageResponses[keyof RestoreStageResponses];
+
+export type ListDeploymentsData = {
+    body?: never;
+    path: {
+        applicationId: number;
+        stageId: number;
+    };
+    query?: {
+        page?: number;
+        size?: number;
+    };
+    url: '/api/applications/{applicationId}/stages/{stageId}/deployments';
+};
+
+export type ListDeploymentsErrors = {
+    /**
+     * Error response
+     */
+    default: Array<ValidationError>;
+};
+
+export type ListDeploymentsError = ListDeploymentsErrors[keyof ListDeploymentsErrors];
+
+export type ListDeploymentsResponses = {
+    /**
+     * Paginated deployments
+     */
+    200: PagedDeployment;
+};
+
+export type ListDeploymentsResponse = ListDeploymentsResponses[keyof ListDeploymentsResponses];
+
+export type ReportDeploymentData = {
+    body: DeploymentDefinition;
+    path: {
+        applicationId: number;
+        stageId: number;
+    };
+    query?: never;
+    url: '/api/applications/{applicationId}/stages/{stageId}/deployments';
+};
+
+export type ReportDeploymentErrors = {
+    /**
+     * Error response
+     */
+    default: Array<ValidationError>;
+};
+
+export type ReportDeploymentError = ReportDeploymentErrors[keyof ReportDeploymentErrors];
+
+export type ReportDeploymentResponses = {
+    /**
+     * Stored deployment event
+     */
+    201: Deployment;
+};
+
+export type ReportDeploymentResponse = ReportDeploymentResponses[keyof ReportDeploymentResponses];
+
+export type GetDeploymentData = {
+    body?: never;
+    path: {
+        applicationId: number;
+        stageId: number;
+        deploymentId: number;
+    };
+    query?: never;
+    url: '/api/applications/{applicationId}/stages/{stageId}/deployments/{deploymentId}';
+};
+
+export type GetDeploymentErrors = {
+    /**
+     * Error response
+     */
+    default: Array<ValidationError>;
+};
+
+export type GetDeploymentError = GetDeploymentErrors[keyof GetDeploymentErrors];
+
+export type GetDeploymentResponses = {
+    /**
+     * The specified deployment event
+     */
+    200: Deployment;
+};
+
+export type GetDeploymentResponse = GetDeploymentResponses[keyof GetDeploymentResponses];
 
 export type ListElementsData = {
     body?: never;
@@ -2340,6 +2470,10 @@ export type RunTestData = {
 };
 
 export type RunTestErrors = {
+    /**
+     * Error response
+     */
+    400: Array<ValidationError>;
     /**
      * Error response
      */

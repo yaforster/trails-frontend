@@ -8,11 +8,21 @@ export interface TestPlanActionGraphValidation {
   readonly message: string | null;
 }
 
+export interface TestPlanGraphLimits {
+  readonly maximumActions: number;
+  readonly maximumPaths: number;
+  readonly maximumActionOccurrences: number;
+}
+
 export function validateTestPlanActionGraph(
   actions: readonly TestPlanActionGraphNode[],
+  limits?: TestPlanGraphLimits,
 ): TestPlanActionGraphValidation {
   if (actions.length === 0) {
     return invalid('Add at least one action before creating a test plan.');
+  }
+  if (limits && actions.length > limits.maximumActions) {
+    return invalid(`The test plan exceeds the server limit of ${limits.maximumActions} actions.`);
   }
 
   const actionIds = new Set<number>();
@@ -34,6 +44,10 @@ export function validateTestPlanActionGraph(
     actions.map((action) => [action.referenceID, 0]),
   );
   for (const action of actions) {
+    const successors = action.nextActions ?? [];
+    if (new Set(successors).size !== successors.length) {
+      return invalid(`Action ${action.referenceID} has duplicate next actions.`);
+    }
     for (const nextActionId of action.nextActions ?? []) {
       if (!actionIds.has(nextActionId)) {
         return invalid(`Action ${action.referenceID} references a missing next action.`);
@@ -75,6 +89,42 @@ export function validateTestPlanActionGraph(
     );
   }
 
+  if (limits) {
+    return validateExpandedPaths(actionsById, actionIdsWithoutIncomingEdges, limits);
+  }
+  return { isValid: true, message: null };
+}
+
+function validateExpandedPaths(
+  actions: ReadonlyMap<number, TestPlanActionGraphNode>,
+  order: readonly number[],
+  limits: TestPlanGraphLimits,
+): TestPlanActionGraphValidation {
+  const paths = new Map<number, number>();
+  const occurrences = new Map<number, number>();
+  for (let index = order.length - 1; index >= 0; index--) {
+    const id = order[index];
+    const successors = actions.get(id)?.nextActions ?? [];
+    let pathCount = successors.length === 0 ? 1 : 0;
+    let occurrenceCount = successors.length === 0 ? 1 : 0;
+    for (const successor of successors) {
+      const successorPaths = paths.get(successor)!;
+      pathCount += successorPaths;
+      occurrenceCount += occurrences.get(successor)! + successorPaths;
+      if (pathCount > limits.maximumPaths) {
+        return invalid(
+          `The test plan exceeds the server limit of ${limits.maximumPaths} execution paths.`,
+        );
+      }
+      if (occurrenceCount > limits.maximumActionOccurrences) {
+        return invalid(
+          `The test plan exceeds the server limit of ${limits.maximumActionOccurrences} total action occurrences across execution paths.`,
+        );
+      }
+    }
+    paths.set(id, pathCount);
+    occurrences.set(id, occurrenceCount);
+  }
   return { isValid: true, message: null };
 }
 
